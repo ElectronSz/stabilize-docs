@@ -1,6 +1,6 @@
 # Stabilize ORM Documentation Website
 
-<div align="center">
+<div align="left">
   <img src="./public/logo_both-transparent.png" alt="Stabilize ORM Logo" width="250" />
 </div>
 
