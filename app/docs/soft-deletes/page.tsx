@@ -1,4 +1,4 @@
-import { CodeBlock } from "@/components/code-block"
+import { CodeBlock } from "@/components/code-block";
 
 export default function SoftDeletesPage() {
   return (
@@ -6,134 +6,121 @@ export default function SoftDeletesPage() {
       <div className="mx-auto max-w-4xl">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Soft Deletes</h1>
         <p className="text-lg text-muted-foreground mb-8">
-          Mark records as deleted without permanently removing them from the database
+          Mark records as deleted without permanently removing them from the
+          database
         </p>
 
-        <div className="prose prose-invert max-w-none space-y-8">
-          <section>
-            <h2 className="text-2xl font-bold mb-4">What are Soft Deletes?</h2>
-            <p className="text-muted-foreground mb-4">
-              Soft deletes allow you to mark records as deleted without actually removing them from the database. This
-              is useful for maintaining data integrity, implementing undo functionality, or keeping records for audit
-              purposes.
-            </p>
-          </section>
-
+        <div className="space-y-8">
           <section>
             <h2 className="text-2xl font-bold mb-4">Enabling Soft Deletes</h2>
             <p className="text-muted-foreground mb-4">
-              Enable soft deletes on a model by setting the <code>softDelete</code> option:
+              Add a <code>deletedAt</code> column with{" "}
+              <code>softDelete: true</code>:
             </p>
             <CodeBlock
-              filename="models/post.ts"
+              filename="models/Post.ts"
+              language="typescript"
               code={`import { defineModel, DataTypes } from "stabilize-orm";
 
 export const Post = defineModel({
   tableName: "posts",
-  softDelete: true, // Enable soft deletes
   columns: {
-    id: {
-      type: DataTypes.Integer,
-    },
-    title: {
-      type: DataTypes.String,
-      length: 255,
-    },
-    content: {
-      type: DataTypes.Text,
-    },
+    id: { type: DataTypes.STRING, required: true, unique: true },
+    title: { type: DataTypes.STRING, length: 255, required: true },
+    content: { type: DataTypes.TEXT },
+    deletedAt: { type: DataTypes.DATETIME, softDelete: true },
   },
 });`}
             />
-            <p className="text-muted-foreground mt-4">
-              When enabled, Stabilize automatically adds a <code>deletedAt</code> column to your table.
-            </p>
           </section>
 
           <section>
             <h2 className="text-2xl font-bold mb-4">Soft Deleting Records</h2>
             <p className="text-muted-foreground mb-4">
-              Use the standard <code>delete</code> method - it will automatically perform a soft delete:
+              The <code>delete()</code> method sets the <code>deletedAt</code>{" "}
+              timestamp:
             </p>
             <CodeBlock
+              language="typescript"
               code={`const repo = orm.getRepository(Post);
 
-// Soft delete a post (sets deletedAt to current timestamp)
-await repo.delete(1);
+// Soft delete (sets deletedAt to current timestamp)
+await repo.delete(post.id);
 
-// The record still exists in the database
-// but won't appear in normal queries`}
+// The record still exists but won't appear in normal queries
+const allPosts = await repo.find().execute(orm.client);
+// Soft-deleted records are automatically excluded`}
             />
           </section>
 
-         
-
           <section>
-            <h2 className="text-2xl font-bold mb-4">Restoring Soft Deleted Records</h2>
-            <p className="text-muted-foreground mb-4">
-              Restore a soft deleted record using the <code>recover</code> method:
-            </p>
+            <h2 className="text-2xl font-bold mb-4">Finding Deleted Records</h2>
             <CodeBlock
-              code={`const repo = orm.getRepository(Post);
+              language="typescript"
+              code={`// Find only soft-deleted records
+const deletedPosts = await repo.findDeleted().execute(orm.client);
 
-// Restore a soft deleted post
-await repo.recover(1);
+// Find all records including soft-deleted
+const allPosts = await repo.withTrashed().execute(orm.client);
 
-// The post is now available in normal queries again
-const post = await repo.findById(1);
-console.log(post); // Post is restored
-
-// Bulk restore
-await repo.recover([1, 2, 3]);`}
+// Count deleted records
+const deletedCount = await repo.countDeleted();`}
             />
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-4">Permanent Deletion</h2>
-            <p className="text-muted-foreground mb-4">
-              Force a permanent deletion using the <code>forceDelete</code> method:
-            </p>
+            <h2 className="text-2xl font-bold mb-4">Recovering Records</h2>
             <CodeBlock
-              code={`const repo = orm.getRepository(Post);
+              language="typescript"
+              code={`// Recover a single record
+const recovered = await repo.recover(post.id);
 
-// Permanently delete a post (removes from database)
-await repo.forceDelete(1);
-
-// This cannot be undone!`}
+// Recover all soft-deleted records
+const recoveredCount = await repo.recoverAll();
+console.log("Recovered", recoveredCount, "records");`}
             />
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-4">Query Builder Integration</h2>
-            <p className="text-muted-foreground mb-4">Soft delete filters work seamlessly with the query builder:</p>
+            <h2 className="text-2xl font-bold mb-4">Bulk Soft Delete</h2>
             <CodeBlock
-              code={`const repo = orm.getRepository(Post);
+              language="typescript"
+              code={`// Bulk soft delete multiple records
+await repo.bulkDelete([post1.id, post2.id, post3.id);
 
-// Complex query excluding soft deleted
-const posts = await repo
-  .query()
-  .where("published", "=", true)
-  .orderBy("createdAt", "DESC")
-  .limit(10)
-  .findAll();
-`}
+// Conditional delete
+const deletedCount = await repo.deleteBy({ status: "archived" });`}
             />
           </section>
 
-         
-
           <section>
-            <h2 className="text-2xl font-bold mb-4">Best Practices</h2>
+            <h2 className="text-2xl font-bold mb-4">How It Works</h2>
             <ul className="list-disc list-inside text-muted-foreground space-y-2">
-              <li>Use soft deletes for user-generated content that might need to be restored</li>
-              <li>Implement a cleanup job to permanently delete old soft-deleted records</li>
-              <li>Consider the storage implications of keeping deleted records</li>
-              <li>Add indexes on the deletedAt column for better query performance</li>
-              <li>Document which models use soft deletes in your team's guidelines</li>
+              <li>
+                <code>find()</code> automatically adds{" "}
+                <code>WHERE deletedAt IS NULL</code>
+              </li>
+              <li>
+                <code>delete()</code> runs{" "}
+                <code>UPDATE SET deletedAt = NOW()</code> instead of{" "}
+                <code>DELETE</code>
+              </li>
+              <li>
+                <code>recover()</code> runs{" "}
+                <code>UPDATE SET deletedAt = NULL</code>
+              </li>
+              <li>
+                <code>count()</code>, <code>exists()</code>,{" "}
+                <code>paginate()</code> all exclude soft-deleted records
+              </li>
+              <li>
+                Lifecycle hooks (<code>beforeDelete</code>,{" "}
+                <code>afterDelete</code>) still fire on soft delete
+              </li>
             </ul>
           </section>
         </div>
       </div>
     </div>
-  )
+  );
 }

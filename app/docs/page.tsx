@@ -1,7 +1,13 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { ArrowRight, BookOpen, Code2, Terminal, Zap } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { ArrowRight, BookOpen, Code2, Terminal, Zap } from "lucide-react";
 
 const sections = [
   {
@@ -28,14 +34,16 @@ const sections = [
     description: "Master the command-line tools for migrations and more",
     href: "/docs/cli",
   },
-]
+];
 
 export default function DocsPage() {
   return (
     <div className="container py-12 md:py-16">
       <div className="mx-auto max-w-4xl">
         <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Documentation</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+            Documentation
+          </h1>
           <p className="text-lg text-muted-foreground text-balance">
             Everything you need to know about building with Stabilize ORM
           </p>
@@ -52,10 +60,16 @@ export default function DocsPage() {
                   <section.icon className="h-5 w-5 text-accent" />
                 </div>
                 <CardTitle className="text-xl">{section.title}</CardTitle>
-                <CardDescription className="text-base">{section.description}</CardDescription>
+                <CardDescription className="text-base">
+                  {section.description}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="ghost" asChild className="group-hover:translate-x-1 transition-transform">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="group-hover:translate-x-1 transition-transform"
+                >
                   <Link href={section.href}>
                     Learn more
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -85,8 +99,8 @@ export default function DocsPage() {
                   {`import { DBType, type DBConfig } from "stabilize-orm";
 
 const dbConfig: DBConfig = {
-  type: DBType.Postgres,
-  connectionString: process.env.NEON_DATABASE_URL,
+  type: DBType.SQLite,
+  connectionString: "./data/app.db",
 };`}
                 </pre>
               </div>
@@ -100,8 +114,8 @@ const dbConfig: DBConfig = {
 const User = defineModel({
   tableName: "users",
   columns: {
-    id: { type: DataTypes.Integer, required: true },
-    email: { type: DataTypes.String, length: 100 },
+    id: { type: DataTypes.STRING, required: true, unique: true },
+    email: { type: DataTypes.STRING, length: 255 },
   },
 });`}
                 </pre>
@@ -111,5 +125,5 @@ const User = defineModel({
         </Card>
       </div>
     </div>
-  )
+  );
 }

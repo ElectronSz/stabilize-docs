@@ -1,13 +1,33 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { ArrowRight, Code2, Database, FileCode, GitBranch, Layers, Zap } from "lucide-react"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import {
+  ArrowRight,
+  Code2,
+  Database,
+  FileCode,
+  GitBranch,
+  Layers,
+  Zap,
+  Server,
+  ShoppingCart,
+  MessageSquare,
+  BarChart3,
+  Shield,
+} from "lucide-react";
 
 const examples = [
   {
     icon: Database,
     title: "Basic CRUD Operations",
-    description: "Create, read, update, and delete records with simple examples",
+    description:
+      "Create, read, update, and delete records with simple examples",
     href: "/examples/crud",
     tags: ["Beginner", "Repository"],
   },
@@ -18,7 +38,6 @@ const examples = [
     href: "/examples/relationships",
     tags: ["Intermediate", "Relations"],
   },
- 
   {
     icon: GitBranch,
     title: "Versioning & Time-Travel",
@@ -26,16 +45,62 @@ const examples = [
     href: "/examples/versioning",
     tags: ["Advanced", "Versioning"],
   },
-
- 
-]
+  {
+    icon: ShoppingCart,
+    title: "E-Commerce Store",
+    description:
+      "Products, categories, customers, orders, and order items with transactions",
+    href: "/examples/ecommerce",
+    tags: ["Intermediate", "Transactions"],
+  },
+  {
+    icon: Server,
+    title: "REST API with Express",
+    description:
+      "Build a full REST API with pagination, filtering, and optimistic locking",
+    href: "/examples/rest-api",
+    tags: ["Intermediate", "API"],
+  },
+  {
+    icon: Zap,
+    title: "Query Builder Deep Dive",
+    description: "Joins, subqueries, CTEs, unions, aggregations, and raw SQL",
+    href: "/examples/query-builder",
+    tags: ["Advanced", "Query Builder"],
+  },
+  {
+    icon: Shield,
+    title: "Soft Deletes & Recovery",
+    description:
+      "Soft delete, recover, bulk operations, and permanent deletion",
+    href: "/examples/soft-deletes",
+    tags: ["Beginner", "Soft Delete"],
+  },
+  {
+    icon: BarChart3,
+    title: "Caching & Performance",
+    description:
+      "Enable caching, cache strategies, cache invalidation, and performance tuning",
+    href: "/examples/caching",
+    tags: ["Advanced", "Performance"],
+  },
+  {
+    icon: MessageSquare,
+    title: "Hooks & Lifecycle Events",
+    description: "Before/after hooks, event listeners, and middleware patterns",
+    href: "/examples/hooks",
+    tags: ["Intermediate", "Hooks"],
+  },
+];
 
 export default function ExamplesPage() {
   return (
     <div className="container py-12 md:py-16">
       <div className="mx-auto max-w-6xl">
         <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">Examples</h1>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
+            Examples
+          </h1>
           <p className="text-lg text-muted-foreground text-balance max-w-2xl">
             Practical code examples to help you get started with Stabilize ORM
           </p>
@@ -62,10 +127,16 @@ export default function ExamplesPage() {
                     </span>
                   ))}
                 </div>
-                <CardDescription className="text-base">{example.description}</CardDescription>
+                <CardDescription className="text-base">
+                  {example.description}
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <Button variant="ghost" asChild className="group-hover:translate-x-1 transition-transform w-full">
+                <Button
+                  variant="ghost"
+                  asChild
+                  className="group-hover:translate-x-1 transition-transform w-full"
+                >
                   <Link href={example.href}>
                     View Example
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -77,5 +148,5 @@ export default function ExamplesPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

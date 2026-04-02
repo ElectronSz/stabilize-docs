@@ -1,6 +1,12 @@
-import { CodeBlock } from "@/components/code-block"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Database } from "lucide-react"
+import { CodeBlock } from "@/components/code-block";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Database } from "lucide-react";
 
 export default function DatabaseSetupPage() {
   return (
@@ -8,7 +14,9 @@ export default function DatabaseSetupPage() {
       <div className="mx-auto max-w-4xl">
         <div className="flex items-center gap-3 mb-4">
           <Database className="h-10 w-10 text-accent" />
-          <h1 className="text-4xl md:text-5xl font-bold">Database Setup Guide</h1>
+          <h1 className="text-4xl md:text-5xl font-bold">
+            Database Setup Guide
+          </h1>
         </div>
         <p className="text-lg text-muted-foreground mb-8">
           Learn how to configure PostgreSQL, MySQL, or SQLite with Stabilize ORM
@@ -17,50 +25,25 @@ export default function DatabaseSetupPage() {
         <div className="space-y-8">
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-2xl">🐘</span>
-                PostgreSQL Setup
-              </CardTitle>
-              <CardDescription>Recommended for production applications</CardDescription>
+              <CardTitle>PostgreSQL Setup</CardTitle>
+              <CardDescription>
+                Recommended for production applications
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">1. Install PostgreSQL</h3>
-                <CodeBlock
-                  code={`# macOS
-brew install postgresql@18
-
-# Ubuntu/Debian
-sudo apt-get install postgresql-18
-
-# Or use a managed service like Neon, Supabase, or AWS RDS`}
-                  language="bash"
-                />
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">2. Create Database</h3>
-                <CodeBlock
-                  code={`# Connect to PostgreSQL
-psql postgres
-
-# Create database
-CREATE DATABASE myapp;
+              <CodeBlock
+                code={`# Create database
+psql postgres -c "CREATE DATABASE myapp;"
 
 # Create user
-CREATE USER myapp_user WITH PASSWORD 'secure_password';
-
-# Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE myapp TO myapp_user;`}
-                  language="sql"
-                />
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">3. Configure Stabilize</h3>
-                <CodeBlock
-                  filename="config/database.ts"
-                  code={`import { DBType, type DBConfig } from "stabilize-orm";
+psql postgres -c "CREATE USER myapp_user WITH PASSWORD 'secure_password';"
+psql postgres -c "GRANT ALL PRIVILEGES ON DATABASE myapp TO myapp_user;"`}
+                language="sql"
+              />
+              <CodeBlock
+                filename="config/database.ts"
+                language="typescript"
+                code={`import { DBType, type DBConfig } from "stabilize-orm";
 
 const dbConfig: DBConfig = {
   type: DBType.Postgres,
@@ -70,132 +53,73 @@ const dbConfig: DBConfig = {
 };
 
 export default dbConfig;`}
-                />
-              </div>
+              />
             </CardContent>
           </Card>
 
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-2xl">🐬</span>
-                MySQL Setup
-              </CardTitle>
-              <CardDescription>Popular choice for web applications</CardDescription>
+              <CardTitle>MySQL Setup</CardTitle>
+              <CardDescription>
+                Popular choice for web applications
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">1. Install MySQL</h3>
-                <CodeBlock
-                  code={`# macOS
-brew install mysql
-
-# Ubuntu/Debian
-sudo apt-get install mysql-server
-
-# Or use managed services like PlanetScale or AWS RDS`}
-                  language="bash"
-                />
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">2. Create Database</h3>
-                <CodeBlock
-                  code={`# Connect to MySQL
-mysql -u root -p
-
-# Create database
-CREATE DATABASE myapp;
-
-# Create user
+              <CodeBlock
+                code={`mysql -u root -p -e "CREATE DATABASE myapp;
 CREATE USER 'myapp_user'@'localhost' IDENTIFIED BY 'secure_password';
-
-# Grant privileges
 GRANT ALL PRIVILEGES ON myapp.* TO 'myapp_user'@'localhost';
-FLUSH PRIVILEGES;`}
-                  language="sql"
-                />
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">3. Configure Stabilize</h3>
-                <CodeBlock
-                  filename="config/database.ts"
-                  code={`import { DBType, type DBConfig } from "stabilize-orm";
-
-const dbConfig: DBConfig = {
+FLUSH PRIVILEGES;"`}
+                language="sql"
+              />
+              <CodeBlock
+                filename="config/database.ts"
+                language="typescript"
+                code={`const dbConfig: DBConfig = {
   type: DBType.MySQL,
   connectionString: "mysql://myapp_user:secure_password@localhost:3306/myapp",
   retryAttempts: 3,
   retryDelay: 1000,
-};
-
-export default dbConfig;`}
-                />
-              </div>
+};`}
+              />
             </CardContent>
           </Card>
 
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <span className="text-2xl">🪶</span>
-                SQLite Setup
-              </CardTitle>
-              <CardDescription>Perfect for development and small applications</CardDescription>
+              <CardTitle>SQLite Setup</CardTitle>
+              <CardDescription>
+                Perfect for development, testing, and small apps
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">1. No Installation Required</h3>
-                <p className="text-sm text-muted-foreground">
-                  SQLite is embedded and requires no separate server installation.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">2. Configure Stabilize</h3>
-                <CodeBlock
-                  filename="config/database.ts"
-                  code={`import { DBType, type DBConfig } from "stabilize-orm";
-
-export const dbConfig: DBConfig = {
+              <p className="text-sm text-muted-foreground">
+                SQLite requires no installation. The database file is created
+                automatically:
+              </p>
+              <CodeBlock
+                filename="config/database.ts"
+                language="typescript"
+                code={`const dbConfig: DBConfig = {
   type: DBType.SQLite,
-  connectionString: "myaapp.db",
+  connectionString: "./data/app.db",
   retryAttempts: 3,
   retryDelay: 1000,
 };`}
-                />
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">3. File Location</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  The database file will be created at the specified path. For production, consider:
-                </p>
-                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                  <li>Using an absolute path</li>
-                  <li>Ensuring proper file permissions</li>
-                  <li>Regular backups</li>
-                  <li>Write-ahead logging (WAL) mode for better concurrency</li>
-                </ul>
-              </div>
+              />
             </CardContent>
           </Card>
 
           <section>
             <h2 className="text-2xl font-bold mb-4">Environment Variables</h2>
-            <p className="text-muted-foreground mb-4">
-              Store database credentials securely using environment variables:
-            </p>
             <CodeBlock
               filename=".env"
               code={`DATABASE_URL=postgresql://user:password@localhost:5432/myapp`}
             />
             <CodeBlock
               filename="config/database.ts"
-              code={`import { DBType, type DBConfig } from "stabilize-orm";
-
-export const dbConfig: DBConfig = {
+              language="typescript"
+              code={`const dbConfig: DBConfig = {
   type: DBType.Postgres,
   connectionString: process.env.DATABASE_URL!,
   retryAttempts: 3,
@@ -203,9 +127,8 @@ export const dbConfig: DBConfig = {
 };`}
             />
           </section>
-
         </div>
       </div>
     </div>
-  )
+  );
 }

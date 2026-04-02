@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { CodeBlock } from "@/components/code-block"
+import { CodeBlock } from "@/components/code-block";
 
 export default function RelationshipsExamplePage() {
   return (
@@ -13,85 +13,78 @@ export default function RelationshipsExamplePage() {
         <div className="space-y-8">
           <section>
             <h2 className="text-2xl font-semibold mb-4">One-to-Many Example</h2>
-            <p className="text-muted-foreground mb-4">A user can have many posts:</p>
+            <p className="text-muted-foreground mb-4">
+              A user can have many posts:
+            </p>
             <CodeBlock
               filename="models/relationships.ts"
               language="typescript"
               code={`import { defineModel, DataTypes, RelationType } from "stabilize-orm";
 
-// User model
 export const User = defineModel({
   tableName: "users",
   columns: {
-    id: { type: DataTypes.Integer, primaryKey: true },
-    name: { type: DataTypes.String, length: 255 },
-    email: { type: DataTypes.String, length: 100 },
+    id: { type: DataTypes.STRING, required: true, unique: true },
+    name: { type: DataTypes.STRING, length: 100 },
+    email: { type: DataTypes.STRING, length: 255, required: true, unique: true },
   },
   relations: [
     {
       type: RelationType.OneToMany,
       target: () => Post,
       property: "posts",
-      foreignKey: "userId",
+      foreignKey: "authorId",
     },
   ],
 });
 
-// Post model
 export const Post = defineModel({
   tableName: "posts",
   columns: {
-    id: { type: DataTypes.Integer, primaryKey: true },
-    userId: { type: DataTypes.Integer, required: true },
-    title: { type: DataTypes.String, length: 255 },
-    content: { type: DataTypes.Text },
+    id: { type: DataTypes.STRING, required: true, unique: true },
+    title: { type: DataTypes.STRING, length: 200, required: true },
+    body: { type: DataTypes.TEXT },
+    authorId: { type: DataTypes.STRING, required: true },
   },
   relations: [
     {
       type: RelationType.ManyToOne,
       target: () => User,
-      property: "user",
-      foreignKey: "userId",
+      property: "author",
+      foreignKey: "authorId",
     },
   ],
-});
-`}
+});`}
             />
-            <p className="text-muted-foreground mb-4">Query with relationships (using JOIN):</p>
+            <p className="text-muted-foreground mb-4">
+              Query with relationships using JOINs:
+            </p>
             <CodeBlock
               filename="examples/query-relationships.ts"
               language="typescript"
-              code={`const userRepository = orm.getRepository(User);
+              code={`const postRepo = orm.getRepository(Post);
 
-// Load user with their posts using JOIN
-const userWithPosts = await userRepository
+// Find post with author loaded via JOIN
+const postsWithAuthor = await postRepo
   .find()
-  .join("posts", "users.id = posts.userId")
-  .where("users.id = ?", 1)
-  .execute(client);
+  .join("users", "posts.authorId = users.id")
+  .select("posts.*", "users.name as authorName")
+  .execute(orm.client);
 
-console.log(userWithPosts[0].name);
-// To get posts, you may need to manually group or join results
-
-// Load all users with their post counts
-const usersWithPosts = await userRepository
+// Count posts per user
+const userPostCounts = await userRepo
   .find()
-  .join("posts", "users.id = posts.userId")
-  .select("users.id", "users.name", "COUNT(posts.id) as post_count")
+  .leftJoin("posts", "users.id = posts.authorId")
+  .select("users.name", "COUNT(posts.id) as postCount")
   .groupBy("users.id", "users.name")
-  .execute(client);
-
-usersWithPosts.forEach(user => {
-  console.log(\`\${user.name} has \${user.post_count} posts\`);
-});`}
+  .execute(orm.client);`}
             />
-            <p className="text-muted-foreground mb-2">
-              Stabilize ORM uses <code>join()</code> for SQL joins. There is no <code>with()</code> method—use <code>join</code> and <code>select</code> to load related data.
-            </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">Many-to-Many Example</h2>
+            <h2 className="text-2xl font-semibold mb-4">
+              Many-to-Many Example
+            </h2>
             <p className="text-muted-foreground mb-4">
               Users can have many roles, roles can belong to many users:
             </p>
@@ -101,8 +94,8 @@ usersWithPosts.forEach(user => {
               code={`export const User = defineModel({
   tableName: "users",
   columns: {
-    id: { type: DataTypes.Integer, primaryKey: true },
-    name: { type: DataTypes.String, length: 255 },
+    id: { type: DataTypes.STRING, required: true, unique: true },
+    name: { type: DataTypes.STRING, length: 100 },
   },
   relations: [
     {
@@ -119,8 +112,8 @@ usersWithPosts.forEach(user => {
 export const Role = defineModel({
   tableName: "roles",
   columns: {
-    id: { type: DataTypes.Integer, primaryKey: true },
-    name: { type: DataTypes.String, length: 50 },
+    id: { type: DataTypes.STRING, required: true, unique: true },
+    name: { type: DataTypes.STRING, length: 50, required: true },
   },
   relations: [
     {
@@ -134,64 +127,56 @@ export const Role = defineModel({
   ],
 });`}
             />
-            <p className="text-muted-foreground mb-4">Query many-to-many relationships using joins:</p>
+            <p className="text-muted-foreground mb-4">
+              Query many-to-many relationships using JOINs:
+            </p>
             <CodeBlock
               filename="examples/query-many-to-many.ts"
               language="typescript"
-              code={`// Load user with roles (JOIN)
-const userWithRoles = await userRepository
+              code={`// Find users with their roles
+const usersWithRoles = await userRepo
   .find()
   .join("user_roles", "users.id = user_roles.userId")
   .join("roles", "user_roles.roleId = roles.id")
-  .where("users.id = ?", 1)
-  .select("users.*", "roles.name as role_name")
-  .execute(client);
+  .select("users.*", "roles.name as roleName")
+  .execute(orm.client);
 
-userWithRoles.forEach(row => {
-  console.log(\`\${row.name} has role: \${row.role_name}\`);
-});
-
-// Find all admins
-const admins = await userRepository
+// Find all admin users
+const admins = await userRepo
   .find()
   .join("user_roles", "users.id = user_roles.userId")
   .join("roles", "user_roles.roleId = roles.id")
   .where("roles.name = ?", "Admin")
-  .execute(client);
-
-console.log(\`Found \${admins.length} admins\`);`}
+  .execute(orm.client);`}
             />
           </section>
 
           <section>
-            <h2 className="text-2xl font-semibold mb-4">Nested Relationships</h2>
+            <h2 className="text-2xl font-semibold mb-4">Relationship Types</h2>
             <p className="text-muted-foreground mb-4">
-              To query nested relationships, use multiple joins:
+              Stabilize supports four relationship types:
             </p>
-            <CodeBlock
-              filename="examples/query-nested.ts"
-              language="typescript"
-              code={`// Load user with posts and each post's comments using JOINs
-const usersWithPostsAndComments = await userRepository
-  .find()
-  .join("posts", "users.id = posts.userId")
-  .join("comments", "posts.id = comments.postId")
-  .where("users.id = ?", 1)
-  .select("users.*", "posts.title as post_title", "comments.content as comment_content")
-  .execute(client);
-
-// Group results in code as needed:
-usersWithPostsAndComments.forEach(row => {
-  console.log(\`\${row.name} wrote post: \${row.post_title}\`);
-  console.log(\`Comment: \${row.comment_content}\`);
-});`}
-            />
-            <p className="text-muted-foreground mt-2">
-              <strong>Note:</strong> Use <code>join()</code> and <code>select()</code> for relationship queries.
-            </p>
+            <ul className="list-disc list-inside space-y-2 text-muted-foreground">
+              <li>
+                <code>RelationType.OneToOne</code> - Each record in A relates to
+                exactly one in B
+              </li>
+              <li>
+                <code>RelationType.ManyToOne</code> - Many records in A relate
+                to one in B
+              </li>
+              <li>
+                <code>RelationType.OneToMany</code> - One record in A relates to
+                many in B
+              </li>
+              <li>
+                <code>RelationType.ManyToMany</code> - Many records in A relate
+                to many in B (uses join table)
+              </li>
+            </ul>
           </section>
         </div>
       </div>
     </div>
-  )
+  );
 }

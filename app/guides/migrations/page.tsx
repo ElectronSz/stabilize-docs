@@ -1,5 +1,5 @@
-import { CodeBlock } from "@/components/code-block"
-import { BookOpen } from "lucide-react"
+import { CodeBlock } from "@/components/code-block";
+import { BookOpen } from "lucide-react";
 
 export default function MigrationsGuidePage() {
   return (
@@ -7,116 +7,94 @@ export default function MigrationsGuidePage() {
       <div className="mx-auto max-w-4xl">
         <div className="flex items-center gap-3 mb-4">
           <BookOpen className="h-10 w-10 text-accent" />
-          <h1 className="text-4xl md:text-5xl font-bold">Migration Strategies</h1>
+          <h1 className="text-4xl md:text-5xl font-bold">
+            Migration Strategies
+          </h1>
         </div>
         <p className="text-lg text-muted-foreground mb-8">
-          Learn how to manage database schema changes effectively with Stabilize ORM
+          Learn how to manage database schema changes effectively with Stabilize
+          ORM
         </p>
 
-        <div className="prose prose-invert max-w-none space-y-8">
+        <div className="space-y-8">
           <section>
-            <h2 className="text-2xl font-bold mb-4">Why Use Migrations?</h2>
-            <p className="text-muted-foreground mb-4">
-              Migrations provide a version-controlled way to manage database schema changes. They allow you to:
-            </p>
-            <ul className="list-disc list-inside text-muted-foreground space-y-2">
-              <li>Track schema changes over time</li>
-              <li>Collaborate with team members safely</li>
-              <li>Deploy schema changes consistently across environments</li>
-              <li>Rollback changes if needed</li>
-            </ul>
+            <h2 className="text-2xl font-bold mb-4">CLI Commands</h2>
+            <CodeBlock
+              code="bunx stabilize-cli generate migration User"
+              language="bash"
+            />
+            <CodeBlock code="bunx stabilize-cli migrate" language="bash" />
+            <CodeBlock
+              code="bunx stabilize-cli migrate:rollback"
+              language="bash"
+            />
+            <CodeBlock
+              code="bunx stabilize-cli migrate:fresh --force"
+              language="bash"
+            />
+            <CodeBlock code="bunx stabilize-cli status" language="bash" />
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-4">Creating Your First Migration</h2>
-            <p className="text-muted-foreground mb-4">Generate a new migration file:</p>
-            <CodeBlock code="stabilize-cli generate migration User" language="bash" />
-            <p className="text-muted-foreground my-4">
-              This creates a timestamped file in the <code>migrations</code> directory:
-            </p>
+            <h2 className="text-2xl font-bold mb-4">Programmatic Migration</h2>
             <CodeBlock
-              filename="migrations/20240115120000_users.ts"
-              code={`import { Migration } from "stabilize-orm";
+              filename="scripts/migrate.ts"
+              language="typescript"
+              code={`import { generateMigration, runMigrations, DBType } from "stabilize-orm";
+import { User } from "./models/User";
 
-export const up: Migration = async (orm) => {
-  await orm.rawQuery(\`
-    CREATE TABLE users (
-      id SERIAL PRIMARY KEY,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      name VARCHAR(100),
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  \`);
-};
+// Generate migration from model
+const migration = await generateMigration(User, "create_users", DBType.SQLite);
+console.log("SQL:", migration.up[0]);
 
-export const down: Migration = async (orm) => {
-  await orm.rawQuery("DROP TABLE IF EXISTS users");
-};`}
+// Run migrations
+await runMigrations(
+  { type: DBType.SQLite, connectionString: "./data/app.db" },
+  [migration]
+);`}
             />
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-4">Running Migrations</h2>
-            <CodeBlock code="stabilize-cli migrate" language="bash" />
-            <p className="text-muted-foreground my-4">
-              This runs all pending migrations in order. Stabilize tracks which migrations have been applied.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Rolling Back Migrations</h2>
-            <CodeBlock code="stabilize-cli migration:rollback" language="bash" />
-            <p className="text-muted-foreground my-4">
-              Rolls back the last batch of migrations using the <code>down</code> function.
-            </p>
-          </section>
-
-         
-
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Migration Best Practices</h2>
+            <h2 className="text-2xl font-bold mb-4">What Gets Generated</h2>
             <ul className="list-disc list-inside text-muted-foreground space-y-2">
+              <li>Table creation with correct column types per database</li>
               <li>
-                Always write both <code>up</code> and <code>down</code> functions
+                Auto-increment primary key for <code>id</code> columns
               </li>
-              <li>Test migrations on a copy of production data</li>
-              <li>Keep migrations small and focused</li>
-              <li>Never modify existing migrations after they've been deployed</li>
-              <li>Use transactions for data migrations</li>
-              <li>Add indexes in separate migrations for large tables</li>
-              <li>Document complex migrations with comments</li>
-              <li>Back up your database before running migrations in production</li>
+              <li>
+                NOT NULL for <code>required</code> columns
+              </li>
+              <li>
+                UNIQUE for <code>unique</code> columns
+              </li>
+              <li>DEFAULT values and expressions</li>
+              <li>
+                Timestamp columns from <code>timestamps</code> config
+              </li>
+              <li>
+                History table if <code>versioned: true</code>
+              </li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-4">Troubleshooting</h2>
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Migration failed mid-way</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  If a migration fails, manually fix the database state and mark the migration as complete or rolled
-                  back.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Conflicts between branches</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Use timestamps in migration filenames to avoid conflicts. Merge migrations carefully.
-                </p>
-              </div>
-              <div>
-                <h3 className="font-semibold mb-2">Long-running migrations</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  For large tables, consider running migrations during low-traffic periods or use online schema change
-                  tools.
-                </p>
-              </div>
-            </div>
+            <h2 className="text-2xl font-bold mb-4">Best Practices</h2>
+            <ul className="list-disc list-inside text-muted-foreground space-y-2">
+              <li>Always review generated migrations before running</li>
+              <li>Test migrations on a copy of production data</li>
+              <li>Never modify existing migrations after deployment</li>
+              <li>
+                Use <code>migrate:fresh</code> only in development
+              </li>
+              <li>Back up your database before production migrations</li>
+              <li>
+                Use <code>status</code> to check which migrations are applied
+              </li>
+            </ul>
           </section>
         </div>
       </div>
     </div>
-  )
+  );
 }

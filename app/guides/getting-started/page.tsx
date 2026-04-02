@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import { Card } from "@/components/ui/card"
-import { CheckCircle2 } from "lucide-react"
-import { CodeBlock } from "@/components/code-block"
+import { Card } from "@/components/ui/card";
+import { CheckCircle2 } from "lucide-react";
+import { CodeBlock } from "@/components/code-block";
 
 export default function GettingStartedGuidePage() {
   return (
@@ -15,23 +15,25 @@ export default function GettingStartedGuidePage() {
 
         <div className="space-y-8">
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <h2 className="text-2xl font-semibold mb-4">Step 1: Install Stabilize</h2>
-            <p className="text-muted-foreground mb-4">Install both the ORM and CLI tools:</p>
+            <h2 className="text-2xl font-semibold mb-4">
+              Step 1: Install Stabilize
+            </h2>
             <CodeBlock code="bun add stabilize-orm" language="bash" />
             <CodeBlock code="bun add -d stabilize-cli" language="bash" />
           </Card>
 
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <h2 className="text-2xl font-semibold mb-4">Step 2: Set Up Your Database</h2>
-            <p className="text-muted-foreground mb-4">Create a database configuration file:</p>
+            <h2 className="text-2xl font-semibold mb-4">
+              Step 2: Set Up Your Database
+            </h2>
             <CodeBlock
               filename="config/database.ts"
               language="typescript"
               code={`import { DBType, type DBConfig } from "stabilize-orm";
 
 const dbConfig: DBConfig = {
-  type: DBType.Postgres,
-  connectionString: process.env.DATABASE_URL,
+  type: DBType.SQLite,
+  connectionString: "./data/app.db",
   retryAttempts: 3,
   retryDelay: 1000,
 };
@@ -41,24 +43,24 @@ export default dbConfig;`}
           </Card>
 
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <h2 className="text-2xl font-semibold mb-4">Step 3: Initialize the ORM</h2>
-            <p className="text-muted-foreground mb-4">Create an ORM instance and connect to your database:</p>
+            <h2 className="text-2xl font-semibold mb-4">
+              Step 3: Initialize the ORM
+            </h2>
             <CodeBlock
               filename="db/index.ts"
               language="typescript"
               code={`import { Stabilize, type CacheConfig, type LoggerConfig, LogLevel } from "stabilize-orm";
-import dbConfig from "./config/database";
+import dbConfig from "../config/database";
 
 const cacheConfig: CacheConfig = {
-  enabled: process.env.CACHE_ENABLED === "true",
-  redisUrl: process.env.REDIS_URL,
+  enabled: false,
   ttl: 60,
 };
 
 const loggerConfig: LoggerConfig = {
   level: LogLevel.Info,
   filePath: "logs/stabilize.log",
-  maxFileSize: 5 * 1024 * 1024, // 5MB
+  maxFileSize: 5 * 1024 * 1024,
   maxFiles: 3,
 };
 
@@ -67,8 +69,9 @@ export const orm = new Stabilize(dbConfig, cacheConfig, loggerConfig);`}
           </Card>
 
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <h2 className="text-2xl font-semibold mb-4">Step 4: Define Your First Model</h2>
-            <p className="text-muted-foreground mb-4">Create a User model:</p>
+            <h2 className="text-2xl font-semibold mb-4">
+              Step 4: Define Your First Model
+            </h2>
             <CodeBlock
               filename="models/User.ts"
               language="typescript"
@@ -76,104 +79,82 @@ export const orm = new Stabilize(dbConfig, cacheConfig, loggerConfig);`}
 
 export const User = defineModel({
   tableName: "users",
+  timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
   columns: {
-    id: {
-      type: DataTypes.Integer,
-    },
-    email: {
-      type: DataTypes.String,
-      length: 100,
-      required: true,
-      unique: true,
-    },
-    name: {
-      type: DataTypes.String,
-      length: 255,
-      required: true,
-    },
-    isActive: {
-      type: DataTypes.Boolean,
-    },
-  },
-  timestamps: {
-    createdAt: "createdAt",
-    updatedAt: "updatedAt",
+    id: { type: DataTypes.STRING, required: true, unique: true },
+    email: { type: DataTypes.STRING, length: 255, required: true, unique: true },
+    name: { type: DataTypes.STRING, length: 100, required: true },
+    isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
   },
 });`}
             />
           </Card>
 
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <h2 className="text-2xl font-semibold mb-4">Step 5: Create the Table</h2>
-            <p className="text-muted-foreground mb-4">Use the CLI to generate and run a migration:</p>
-            <CodeBlock code="bunx stabilize-cli generate migration User" language="bash" />
+            <h2 className="text-2xl font-semibold mb-4">
+              Step 5: Create the Table
+            </h2>
+            <CodeBlock
+              code="bunx stabilize-cli generate migration User"
+              language="bash"
+            />
             <CodeBlock code="bunx stabilize-cli migrate" language="bash" />
           </Card>
 
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <h2 className="text-2xl font-semibold mb-4">Step 6: Perform Your First Query</h2>
-            <p className="text-muted-foreground mb-4">Create, read, update, and delete users:</p>
+            <h2 className="text-2xl font-semibold mb-4">
+              Step 6: Perform Your First Query
+            </h2>
             <CodeBlock
               filename="example/user-crud.ts"
               language="typescript"
-              code={`import { orm } from "./db";
-import { User } from "./models/User";
+              code={`import { orm } from "../db";
+import { User } from "../models/User";
+import { generateUUID } from "stabilize-orm";
 
-const userRepository = orm.getRepository(User);
+const userRepo = orm.getRepository(User);
 
 // Create a user
-const newUser = await userRepository.create({
-  email: "ciniso@stabilize.xyz",
-  name: "Ciniso Dlamini",
+const newUser = await userRepo.create({
+  id: generateUUID(),
+  email: "alice@example.com",
+  name: "Alice Johnson",
 });
-
-console.log("Created user:", newUser);
+console.log("Created:", newUser);
 
 // Find all users
-const allUsers = await userRepository.find().execute();
-console.log("All users:", allUsers);
+const allUsers = await userRepo.find().execute(orm.client);
 
-// Find one user
-const user = await userRepository
-  .find()
-  .where("email = ?", "ciniso@stabilize.xyz")
-  .first();
+// Find by conditions
+const user = await userRepo.findOneBy({ email: "alice@example.com" });
 
-console.log("Found user:", user);
+// Update
+await userRepo.update(user.id, { name: "Alice Smith" });
 
-// Update a user
-await userRepository.update(user.id, {
-  name: "Ciniso Dlamini",
-});
-
-// Delete a user
-await userRepository.delete(user.id);`}
+// Delete
+await userRepo.delete(user.id);`}
             />
           </Card>
 
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <h2 className="text-2xl font-semibold mb-4">Next Steps</h2>
-            <ul className="space-y-3">
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
-                <span>Learn about relationships between models</span>
+          <Card className="border-green-500/20 bg-green-500/5 backdrop-blur-sm p-6">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-6 w-6 text-green-500" />
+              <h2 className="text-xl font-semibold text-green-500">
+                Next Steps
+              </h2>
+            </div>
+            <ul className="space-y-2 mt-4 text-muted-foreground">
+              <li>Learn about relationships between models</li>
+              <li>Explore advanced query builder features</li>
+              <li>Set up versioning for time-travel queries</li>
+              <li>
+                Add lifecycle hooks with <code>registerHooks()</code>
               </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
-                <span>Explore advanced query builder features</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
-                <span>Set up versioning for time-travel queries</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <CheckCircle2 className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
-                <span>Add lifecycle hooks to your models</span>
-              </li>
+              <li>Enable caching for better performance</li>
             </ul>
           </Card>
         </div>
       </div>
     </div>
-  )
+  );
 }

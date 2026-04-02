@@ -1,13 +1,21 @@
-import { CodeBlock } from "@/components/code-block"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2 } from "lucide-react"
+import { CodeBlock } from "@/components/code-block";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { CheckCircle2 } from "lucide-react";
 
 export default function QuickStartPage() {
   return (
     <div className="container py-12 md:py-16">
       <div className="mx-auto max-w-4xl">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Quick Start</h1>
-        <p className="text-lg text-muted-foreground mb-8">Get up and running with Stabilize ORM in under 5 minutes</p>
+        <p className="text-lg text-muted-foreground mb-8">
+          Get up and running with Stabilize ORM in under 5 minutes
+        </p>
 
         <div className="space-y-8">
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm">
@@ -21,6 +29,7 @@ export default function QuickStartPage() {
             </CardHeader>
             <CardContent>
               <CodeBlock code="bun add stabilize-orm" language="bash" />
+              <CodeBlock code="bun add -d stabilize-cli" language="bash" />
             </CardContent>
           </Card>
 
@@ -32,24 +41,24 @@ export default function QuickStartPage() {
                 </div>
                 <CardTitle>Configure Database Connection</CardTitle>
               </div>
-              <CardDescription>Create a configuration file for your database</CardDescription>
+              <CardDescription>
+                Create a configuration file for your database
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <CodeBlock
                 filename="config/database.ts"
-                code={`
-import { DBType, type DBConfig } from "stabilize-orm";
+                language="typescript"
+                code={`import { DBType, type DBConfig } from "stabilize-orm";
 
-// database configuration
 const dbConfig: DBConfig = {
-  type: DBType.Postgres, // or DBType.MySQL, DBType.SQLite
-  connectionString: process.env.DATABASE_URL,
+  type: DBType.SQLite, // or DBType.Postgres, DBType.MySQL
+  connectionString: "./data/app.db",
   retryAttempts: 3,
   retryDelay: 1000,
 };
 
 export default dbConfig;`}
-                language="typescript"
               />
             </CardContent>
           </Card>
@@ -62,48 +71,29 @@ export default dbConfig;`}
                 </div>
                 <CardTitle>Define Your First Model</CardTitle>
               </div>
-              <CardDescription>Create a model to represent your data</CardDescription>
+              <CardDescription>
+                Create a model to represent your data
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <CodeBlock
-                filename="models/user.ts"
-                code={`import { defineModel, DataTypes, RelationType } from "stabilize-orm";
-import { UserRole } from "./UserRole";
+                filename="models/User.ts"
+                language="typescript"
+                code={`import { defineModel, DataTypes } from "stabilize-orm";
 
 const User = defineModel({
   tableName: "users",
-  versioned: true, // versioned 
+  timestamps: { createdAt: "createdAt", updatedAt: "updatedAt" },
   columns: {
-    id: { type: DataTypes.Integer, required: true },
-    email: { type: DataTypes.String, length: 100, required: true, unique: true },
+    id: { type: DataTypes.STRING, required: true, unique: true },
+    email: { type: DataTypes.STRING, length: 255, required: true, unique: true },
+    name: { type: DataTypes.STRING, length: 100, required: true },
+    isActive: { type: DataTypes.BOOLEAN, defaultValue: true },
+    deletedAt: { type: DataTypes.DATETIME, softDelete: true },
   },
-  //timestamps
-  timestamps: {
-    createdAt: "created_at",
-    updatedAt: "update_at",
-  },
-  // define relationships
-  relations: [
-    {
-      type: RelationType.OneToMany,
-      target: () => UserRole,
-      property: "roles",
-      foreignKey: "userId",
-    },
-  ],
-  // hooks
-  hooks: {
-    beforeSave: (entity) => {}),
-    afterSave: (entity) => {}),
-    beforeCreate: (entity) => {}),
-    afterCreate: (entity) => {}),
-    beforeUpdate: (entity) => {}),
-    afterCreate: (entity) => {}),
-  },
-})
+});
 
 export { User };`}
-                language="typescript"
               />
             </CardContent>
           </Card>
@@ -116,29 +106,30 @@ export { User };`}
                 </div>
                 <CardTitle>Initialize Stabilize</CardTitle>
               </div>
-              <CardDescription>Initialize stabilize instance, configure cache and logger</CardDescription>
+              <CardDescription>
+                Create an ORM instance and connect to your database
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <CodeBlock
                 filename="db/index.ts"
-                code={`import { Stabilize,type CacheConfig, type LoggerConfig, LogLevel } from "stabilize-orm";
-import dbConfig from "./database";
+                language="typescript"
+                code={`import { Stabilize, type CacheConfig, type LoggerConfig, LogLevel } from "stabilize-orm";
+import dbConfig from "../config/database";
 
 const cacheConfig: CacheConfig = {
-  enabled: process.env.CACHE_ENABLED === "true",
-  redisUrl: process.env.REDIS_URL,
+  enabled: false,
   ttl: 60,
 };
 
 const loggerConfig: LoggerConfig = {
   level: LogLevel.Info,
   filePath: "logs/stabilize.log",
-  maxFileSize: 5 * 1024 * 1024, // 5MB
+  maxFileSize: 5 * 1024 * 1024,
   maxFiles: 3,
 };
 
 export const orm = new Stabilize(dbConfig, cacheConfig, loggerConfig);`}
-                language="typescript"
               />
             </CardContent>
           </Card>
@@ -151,33 +142,38 @@ export const orm = new Stabilize(dbConfig, cacheConfig, loggerConfig);`}
                 </div>
                 <CardTitle>Start Querying</CardTitle>
               </div>
-              <CardDescription>Use the repository to interact with your data</CardDescription>
+              <CardDescription>
+                Use the repository to interact with your data
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <CodeBlock
-                code={`import { orm } from "./db";
+                language="typescript"
+                code={`import { orm } from "../db";
+import { User } from "../models/User";
+import { generateUUID } from "stabilize-orm";
 
-// create a user repository
-const userRepository = orm.getRepository(User);
+const userRepo = orm.getRepository(User);
 
 // Create a new user
-const newUser = await userRepository.create({
-  email: "ciniso@stabilize.xyz",
-  name: "Ciniso Matsebula ",
+const newUser = await userRepo.create({
+  id: generateUUID(),
+  email: "alice@example.com",
+  name: "Alice Johnson",
 });
+console.log("Created:", newUser);
 
-// find a single user
-const foundUser = await userRepository.findOne(newUser.id);
+// Find by ID
+const found = await userRepo.findOne(newUser.id);
 
-// update a user
-const updatedUser = await userRepository.update(newUser.id,
- { email: "admin@offbytesecure.com" }
-);
+// Update
+const updated = await userRepo.update(newUser.id, { name: "Alice Smith" });
 
-// delete user
-await userRepository.delete(newUser.id);
-`}
-                language="typescript"
+// Delete (soft delete if deletedAt column exists)
+await userRepo.delete(newUser.id);
+
+// Find all
+const allUsers = await userRepo.find().execute(orm.client);`}
               />
             </CardContent>
           </Card>
@@ -186,16 +182,19 @@ await userRepository.delete(newUser.id);
             <CardHeader>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-6 w-6 text-green-500" />
-                <CardTitle className="text-green-500">You're All Set!</CardTitle>
+                <CardTitle className="text-green-500">
+                  You're All Set!
+                </CardTitle>
               </div>
               <CardDescription>
-                You now have a working Stabilize ORM setup. Explore the documentation to learn about advanced features
-                like relationships, transactions, and caching.
+                You now have a working Stabilize ORM setup. Explore the
+                documentation to learn about advanced features like
+                relationships, versioning, caching, and the CLI.
               </CardDescription>
             </CardHeader>
           </Card>
         </div>
       </div>
     </div>
-  )
+  );
 }

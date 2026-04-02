@@ -1,19 +1,28 @@
-import { CodeBlock } from "@/components/code-block"
+import { CodeBlock } from "@/components/code-block";
 
 export default function SeedingPage() {
   return (
     <div className="container py-12 md:py-16">
       <div className="mx-auto max-w-4xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-4">Database Seeding</h1>
-        <p className="text-lg text-muted-foreground mb-8">Populate your database with test or initial data</p>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4">
+          Database Seeding
+        </h1>
+        <p className="text-lg text-muted-foreground mb-8">
+          Populate your database with test or initial data
+        </p>
 
-        <div className="prose prose-invert max-w-none space-y-8">
+        <div className="space-y-8">
           <section>
             <h2 className="text-2xl font-bold mb-4">Overview</h2>
             <p className="text-muted-foreground mb-4">
-              Database seeding allows you to populate your database with initial or test data. This is useful for
-              development, testing, and setting up demo environments.
+              Database seeding populates your database with initial or test
+              data. Use the CLI to generate and run seed files:
             </p>
+            <CodeBlock
+              code="bunx stabilize-cli generate seed User --count 10"
+              language="bash"
+            />
+            <CodeBlock code="bunx stabilize-cli seed" language="bash" />
           </section>
 
           <section>
@@ -23,33 +32,52 @@ export default function SeedingPage() {
             </p>
             <CodeBlock
               filename="seeds/users.seed.ts"
-              code={`import { Stabilize } from "stabilize-orm";
-import { User } from "../models/user";
+              language="typescript"
+              code={`import { generateUUID } from "stabilize-orm";
 
-export async function seed(orm: Stabilize) {
+export async function seed(orm: any) {
   const userRepo = orm.getRepository(User);
 
   // Create admin user
   await userRepo.create({
-    email: "ciniso@stabilize.xyz",
-    name: "Ciniso Matsebula",
+    id: generateUUID(),
+    email: "admin@example.com",
+    name: "Admin User",
     role: "admin",
   });
 
   // Create regular users
-  const users = [
-    { email: "lwazi@stabilize.xyz", name: "Lwazi Dlamini", role: "user" },
-    { email: "faye@stabilize.xyz", name: "Faye Manana", role: "user" },
-    { email: "botkiller@stabilize.xyz", name: "The Botkiller", role: "user" },
-  ];
-
-  await userRepo.bulkCreate(users);
+  await userRepo.bulkCreate([
+    { id: generateUUID(), email: "alice@example.com", name: "Alice", role: "user" },
+    { id: generateUUID(), email: "bob@example.com", name: "Bob", role: "user" },
+  ]);
 }
 
-export async function rollback(orm: Stabilize) {
+export async function rollback(orm: any) {
   const userRepo = orm.getRepository(User);
   await userRepo.truncate();
 }`}
+            />
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mb-4">
+              Repository seed() Method
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              The repository also has a <code>seed()</code> method for simple
+              seeding:
+            </p>
+            <CodeBlock
+              filename="examples/seed.ts"
+              language="typescript"
+              code={`const userRepo = orm.getRepository(User);
+
+// Seed data (skips if records already exist)
+await userRepo.seed([
+  { id: generateUUID(), email: "admin@example.com", name: "Admin" },
+  { id: generateUUID(), email: "user@example.com", name: "User" },
+], { ignoreDuplicates: true });`}
             />
           </section>
 
@@ -59,13 +87,16 @@ export async function rollback(orm: Stabilize) {
               <li>Keep seed files idempotent (safe to run multiple times)</li>
               <li>Use transactions for complex seeding operations</li>
               <li>Separate development and production seeds</li>
-              <li>Document the order in which seeds should run</li>
-              <li>Use bulk operations for large datasets</li>
-              <li>Clean up test data in test environments after use</li>
+              <li>
+                Use <code>bulkCreate()</code> for large datasets
+              </li>
+              <li>
+                Use <code>generateUUID()</code> for ID generation
+              </li>
             </ul>
           </section>
         </div>
       </div>
     </div>
-  )
+  );
 }

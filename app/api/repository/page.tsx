@@ -1,7 +1,8 @@
-"use client"
+"use client";
 
-import { Card } from "@/components/ui/card"
-import { CodeBlock } from "@/components/code-block"
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { CodeBlock } from "@/components/code-block";
 
 export default function RepositoryApiPage() {
   return (
@@ -14,288 +15,247 @@ export default function RepositoryApiPage() {
           </p>
 
           <div className="space-y-8">
-
-            {/* find() */}
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">find()</h2>
-              <CodeBlock code={`find(): QueryBuilder<T>`} language="typescript" />
+              <CodeBlock
+                language="typescript"
+                code={`find(): QueryBuilder<T>`}
+              />
               <p className="text-muted-foreground mb-4">
-                Creates a new QueryBuilder instance for the repository's table. Automatically excludes soft-deleted records.
+                Creates a QueryBuilder. Automatically excludes soft-deleted
+                records.
               </p>
               <CodeBlock
-                code={`const users = await userRepository
-  .find()
-  .where("isActive = ?", true)
-  .orderBy("createdAt DESC")
-  .limit(10)
-  .execute(client);`}
                 language="typescript"
+                code={`const users = await userRepo.find().execute(orm.client);`}
               />
             </Card>
 
-            {/* findOne() */}
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">findOne()</h2>
               <CodeBlock
-                code={`async findOne(
-  id: number | string,
-  options?: { relations?: string[] },
-  _client?: DBClient
-): Promise<T | null>`}
                 language="typescript"
+                code={`async findOne(id: number | string, options?: { relations?: string[] }, client?: DBClient): Promise<T | null>`}
               />
-              <p className="text-muted-foreground mb-4">Finds a single record by its primary key.</p>
+              <p className="text-muted-foreground mb-4">
+                Finds a single record by primary key.
+              </p>
               <CodeBlock
-                code={`const user = await userRepository.findOne(1);
-
-// With relations
-const userWithPosts = await userRepository.findOne(1, {
-  relations: ["posts"]
-});`}
                 language="typescript"
+                code={`const user = await userRepo.findOne(user.id);`}
               />
             </Card>
 
-            {/* create() */}
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">
+                findOneBy() / findBy()
+              </h2>
+              <CodeBlock
+                language="typescript"
+                code={`async findOneBy(conditions: Partial<T>, options?, client?): Promise<T | null>
+async findBy(conditions: Partial<T>, options?): Promise<T[]>`}
+              />
+              <p className="text-muted-foreground mb-4">
+                TypeORM-style conditional finders.
+              </p>
+              <CodeBlock
+                language="typescript"
+                code={`const user = await userRepo.findOneBy({ email: "alice@example.com" });
+const admins = await userRepo.findBy({ role: "admin" }, { limit: 10 });`}
+              />
+            </Card>
+
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">create()</h2>
               <CodeBlock
-                code={`async create(
-  entity: Partial<T>,
-  options?: { relations?: string[] }
-): Promise<T>`}
                 language="typescript"
+                code={`async create(entity: Partial<T>, options?: { relations?: string[] }): Promise<T>`}
               />
               <p className="text-muted-foreground mb-4">
-                Creates a new record. Runs beforeCreate, beforeSave, afterCreate, and afterSave hooks. Automatically manages timestamps.
+                Creates a new record. Runs
+                beforeCreate/afterCreate/beforeSave/afterSave hooks.
               </p>
               <CodeBlock
-                code={`const newUser = await userRepository.create({
-  email: "john@example.com",
-  name: "John Doe",
-});`}
                 language="typescript"
+                code={`const user = await userRepo.create({ id: generateUUID(), email: "alice@example.com", name: "Alice" });`}
               />
             </Card>
 
-            {/* bulkCreate() */}
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">bulkCreate()</h2>
               <CodeBlock
-                code={`async bulkCreate(
-  entities: Partial<T>[],
-  options?: { relations?: string[]; batchSize?: number }
-): Promise<T[]>`}
                 language="typescript"
+                code={`async bulkCreate(entities: Partial<T>[], options?: { batchSize?: number }): Promise<T[]>`}
               />
-              <p className="text-muted-foreground mb-4">Creates multiple records in batches.</p>
+              <p className="text-muted-foreground mb-4">
+                Creates multiple records in batches.
+              </p>
               <CodeBlock
-                code={`const users = await userRepository.bulkCreate([
-  { name: "Alice", email: "alice@example.com" },
-  { name: "Bob", email: "bob@example.com" },
-], { batchSize: 1000 });`}
                 language="typescript"
+                code={`await userRepo.bulkCreate([
+  { id: generateUUID(), name: "Alice", email: "alice@example.com" },
+  { id: generateUUID(), name: "Bob", email: "bob@example.com" },
+], { batchSize: 1000 });`}
               />
             </Card>
 
-            {/* update() */}
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">update()</h2>
               <CodeBlock
-                code={`async update(
-  id: number | string,
-  entity: Partial<T>
-): Promise<T>`}
                 language="typescript"
+                code={`async update(id: number | string, entity: Partial<T>): Promise<T>`}
               />
               <p className="text-muted-foreground mb-4">
-                Updates a record by ID. Runs beforeUpdate, beforeSave, afterUpdate, and afterSave hooks.
+                Updates a record by ID. Supports optimistic locking if
+                configured.
               </p>
               <CodeBlock
-                code={`const updated = await userRepository.update(1, {
-  name: "John Smith",
-});`}
                 language="typescript"
+                code={`const updated = await userRepo.update(user.id, { name: "Alice Smith" });`}
               />
             </Card>
 
-            {/* bulkUpdate() */}
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">bulkUpdate()</h2>
+              <h2 className="text-2xl font-semibold mb-4">
+                upsert() / bulkUpsert()
+              </h2>
               <CodeBlock
-                code={`async bulkUpdate(
-  updates: {
-    where: { condition: string; params: any[] };
-    set: Partial<T>;
-  }[],
-  options?: { batchSize?: number }
-): Promise<void>`}
                 language="typescript"
-              />
-              <p className="text-muted-foreground mb-4">Updates multiple records based on different conditions.</p>
-              <CodeBlock
-                code={`await userRepository.bulkUpdate([
-  {
-    where: { condition: "id = ?", params: [1] },
-    set: { status: "inactive" }
-  },
-  {
-    where: { condition: "id = ?", params: [2] },
-    set: { status: "inactive" }
-  },
-]);`}
-                language="typescript"
-              />
-            </Card>
-
-            {/* upsert() */}
-            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">upsert()</h2>
-              <CodeBlock
-                code={`async upsert(
-  entity: Partial<T>,
-  keys: string[]
-): Promise<T>`}
-                language="typescript"
+                code={`async upsert(entity: Partial<T>, keys: string[]): Promise<T>
+async bulkUpsert(entities: Partial<T>[], keys: string[]): Promise<T[]>`}
               />
               <p className="text-muted-foreground mb-4">
-                Performs an "update or insert" operation based on unique keys.
+                Insert or update based on unique keys.
               </p>
               <CodeBlock
-                code={`const user = await userRepository.upsert(
-  { email: "john@example.com", name: "John" },
-  ["email"]
-);`}
                 language="typescript"
+                code={`await userRepo.upsert({ email: "alice@example.com", name: "Alice" }, ["email"]);`}
               />
             </Card>
 
-            {/* delete() */}
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">delete()</h2>
-              <CodeBlock code={`async delete(id: number | string): Promise<void>`} language="typescript" />
-              <p className="text-muted-foreground mb-4">
-                Deletes a record by ID. Performs soft delete if enabled. Runs beforeDelete and afterDelete hooks.
-              </p>
-              <CodeBlock code={`await userRepository.delete(1);`} language="typescript" />
-            </Card>
-
-            {/* bulkDelete() */}
-            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">bulkDelete()</h2>
               <CodeBlock
-                code={`async bulkDelete(
-  ids: (number | string)[],
-  options?: { batchSize?: number }
-): Promise<void>`}
                 language="typescript"
-              />
-              <p className="text-muted-foreground mb-4">Deletes multiple records by their IDs in batches.</p>
-              <CodeBlock
-                code={`await userRepository.bulkDelete([1, 2, 3], { batchSize: 1000 });`}
-                language="typescript"
-              />
-            </Card>
-
-            {/* recover() */}
-            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">recover()</h2>
-              <CodeBlock code={`async recover(id: number | string): Promise<T>`} language="typescript" />
-              <p className="text-muted-foreground mb-4">
-                Recovers a soft-deleted record. Only works if soft delete is enabled.
-              </p>
-              <CodeBlock code={`const recovered = await userRepository.recover(1);`} language="typescript" />
-            </Card>
-
-            {/* asOf() */}
-            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">asOf()</h2>
-              <CodeBlock
-                code={`async asOf(
-  id: number | string,
-  asOfDate: Date
-): Promise<T | null>`}
-                language="typescript"
+                code={`async delete(id: number | string): Promise<void>`}
               />
               <p className="text-muted-foreground mb-4">
-                Time-travel query: get record as it was at a specific point in time. Only works if versioning is enabled.
+                Deletes a record. Soft delete if <code>deletedAt</code> column
+                exists.
               </p>
               <CodeBlock
-                code={`const pastUser = await userRepository.asOf(
-  1,
-  new Date("2025-01-01")
-);`}
                 language="typescript"
+                code={`await userRepo.delete(user.id);`}
               />
             </Card>
 
-            {/* history() */}
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">history()</h2>
-              <CodeBlock code={`async history(id: number | string): Promise<T[]>`} language="typescript" />
-              <p className="text-muted-foreground mb-4">
-                Get all historical versions of a record. Only works if versioning is enabled.
-              </p>
+              <h2 className="text-2xl font-semibold mb-4">
+                recover() / recoverAll()
+              </h2>
               <CodeBlock
-                code={`const versions = await userRepository.history(1);
-console.log(\`Found \${versions.length} versions\`);`}
                 language="typescript"
-              />
-            </Card>
-
-            {/* rollback() */}
-            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">rollback()</h2>
-              <CodeBlock
-                code={`async rollback(
-  id: number | string,
-  version: number
-): Promise<T>`}
-                language="typescript"
+                code={`async recover(id: number | string): Promise<T>
+async recoverAll(): Promise<number>`}
               />
               <p className="text-muted-foreground mb-4">
-                Rollback a record to a previous version. Only works if versioning is enabled.
+                Restores soft-deleted records.
               </p>
-              <CodeBlock code={`const restored = await userRepository.rollback(1, 2);`} language="typescript" />
-            </Card>
-
-            {/* scope() */}
-            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">scope()</h2>
-              <CodeBlock code={`scope(name: string, ...args: any[]): QueryBuilder<T>`} language="typescript" />
-              <p className="text-muted-foreground mb-4">Applies a custom scope to the query.</p>
               <CodeBlock
-                code={`const activeUsers = await userRepository
-  .scope("active")
-  .execute(client);`}
                 language="typescript"
+                code={`await userRepo.recover(user.id);
+const count = await userRepo.recoverAll();`}
               />
             </Card>
 
-            {/* rawQuery() */}
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">rawQuery()</h2>
+              <h2 className="text-2xl font-semibold mb-4">
+                count() / exists()
+              </h2>
               <CodeBlock
-                code={`async rawQuery<T>(
-  query: string,
-  params?: any[]
-): Promise<T[]>`}
                 language="typescript"
+                code={`async count(conditions?: Partial<T>): Promise<number>
+async exists(conditions?: Partial<T>): Promise<boolean>`}
               />
-              <p className="text-muted-foreground mb-4">
-                Executes a raw SQL query. Use with caution as it bypasses ORM abstractions.
-              </p>
               <CodeBlock
-                code={`const results = await userRepository.rawQuery(
-  "SELECT * FROM users WHERE status = ?",
-  ["active"]
-);`}
                 language="typescript"
+                code={`const total = await userRepo.count();
+const activeCount = await userRepo.count({ isActive: true });
+const exists = await userRepo.exists({ email: "alice@example.com" });`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">aggregate()</h2>
+              <CodeBlock
+                language="typescript"
+                code={`async aggregate(options: { count?: string | string[]; sum?: string[]; avg?: string[]; min?: string[]; max?: string[] }): Promise<Record<string, any>>`}
+              />
+              <CodeBlock
+                language="typescript"
+                code={`const stats = await userRepo.aggregate({ count: "*", avg: ["age"], min: ["age"], max: ["age"] });`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">
+                Versioning Methods
+              </h2>
+              <CodeBlock
+                language="typescript"
+                code={`// Get all versions
+const history = await userRepo.history(user.id);
+
+// Time-travel query
+const pastUser = await userRepo.asOf(user.id, new Date("2025-01-01"));
+
+// Rollback to a version
+await userRepo.rollback(user.id, 2);`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">Utility Methods</h2>
+              <CodeBlock
+                language="typescript"
+                code={`// Pluck single column
+const emails = await userRepo.pluck("email");
+
+// Select specific columns
+const partial = await userRepo.selectColumns("id", "email");
+
+// Increment/decrement
+await userRepo.increment(user.id, "loginCount", 1);
+await userRepo.decrement(user.id, "credits", 5);
+
+// Toggle boolean
+await userRepo.toggle(user.id, "isActive");
+
+// Conditional update/delete
+await userRepo.updateBy({ isActive: false }, { role: "inactive" });
+await userRepo.deleteBy({ role: "spam" });
+
+// Paginate
+const page = await userRepo.paginate(1, 20);
+// { data: [...], total: 100, page: 1, pageSize: 20 }
+
+// Health check
+const health = await userRepo.healthCheck();
+// { status: "healthy", table: "users", rows: 42, latencyMs: 0.5 }
+
+// Raw query
+const results = await userRepo.rawQuery("SELECT * FROM users WHERE age > ?", [18]);
+
+// Truncate
+await userRepo.truncate();
+
+// Seed
+await userRepo.seed([{ id: generateUUID(), name: "Admin" }], { ignoreDuplicates: true });`}
               />
             </Card>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,85 +1,107 @@
-"use client"
+"use client";
 
-import React from "react"
-import { Highlight, Language, PrismTheme } from "prism-react-renderer"
-import { useTheme } from "next-themes"
+import React from "react";
+import { Highlight, Language, PrismTheme } from "prism-react-renderer";
+import { useTheme } from "next-themes";
 
-export const nightOwlDark: PrismTheme = {
-  plain: {
-    color: "#d6deeb",         
-    backgroundColor: "transparent"
-  },
+const warmDark: PrismTheme = {
+  plain: { color: "#e8dcc8", backgroundColor: "transparent" },
   styles: [
-    { types: ["comment"], style: { color: "#637777", fontStyle: "italic" } },
-    { types: ["string", "inserted"], style: { color: "#ecc48d" } },
-    { types: ["number"], style: { color: "#f78c6c" } },
-    { types: ["builtin", "char", "constant", "function"], style: { color: "#82aaff" } },
-    { types: ["punctuation", "selector"], style: { color: "#c792ea" } },
-    { types: ["variable"], style: { color: "#addb67" } },
-    { types: ["keyword", "operator", "tag"], style: { color: "#7fdbca" } },
-    { types: ["class-name"], style: { color: "#ffeb95" } },
-    { types: ["parameter"], style: { color: "#f78c6c" } },
-    { types: ["property"], style: { color: "#addb67" } },
-    { types: ["namespace"], style: { color: "#b2ccd6" } },
-    { types: ["deleted"], style: { color: "#ef5350" } },
-  ]
+    { types: ["comment"], style: { color: "#6b6560", fontStyle: "italic" } },
+    { types: ["punctuation"], style: { color: "#8a7e72" } },
+    {
+      types: ["property", "tag", "boolean", "number", "constant", "symbol"],
+      style: { color: "#e0916e" },
+    },
+    {
+      types: ["selector", "attr-name", "string", "char", "builtin"],
+      style: { color: "#a8c686" },
+    },
+    { types: ["operator", "entity", "url"], style: { color: "#d4a76a" } },
+    { types: ["atrule", "attr-value", "keyword"], style: { color: "#d4a76a" } },
+    { types: ["function", "class-name"], style: { color: "#e8c88a" } },
+    { types: ["regex", "important", "variable"], style: { color: "#c9967e" } },
+    { types: ["deleted"], style: { color: "#e06c75" } },
+    { types: ["inserted"], style: { color: "#a8c686" } },
+  ],
 };
 
-export const nightOwlLight: PrismTheme = {
-  plain: {
-    color: "#1e1e1e",       
-    backgroundColor: "transparent"
-  },
+const warmLight: PrismTheme = {
+  plain: { color: "#3d3428", backgroundColor: "transparent" },
   styles: [
-    { types: ["comment"], style: { color: "#999988", fontStyle: "italic" } },
-    { types: ["string", "inserted"], style: { color: "#b56959" } },
-    { types: ["number"], style: { color: "#296aa3" } },
-    { types: ["builtin", "char", "constant", "function"], style: { color: "#267f99" } },
-    { types: ["punctuation", "selector"], style: { color: "#a1a1a1" } },
-    { types: ["variable"], style: { color: "#0086b3" } },
-    { types: ["keyword", "operator", "tag"], style: { color: "#7f5fc7" } },
-    { types: ["class-name"], style: { color: "#795e26" } },
-    { types: ["parameter"], style: { color: "#296aa3" } },
-    { types: ["property"], style: { color: "#0086b3" } },
-    { types: ["namespace"], style: { color: "#a67f59" } },
-    { types: ["deleted"], style: { color: "#a61717" } },
-  ]
+    { types: ["comment"], style: { color: "#9e9590", fontStyle: "italic" } },
+    { types: ["punctuation"], style: { color: "#8a7e72" } },
+    {
+      types: ["property", "tag", "boolean", "number", "constant", "symbol"],
+      style: { color: "#c45d2e" },
+    },
+    {
+      types: ["selector", "attr-name", "string", "char", "builtin"],
+      style: { color: "#4a7c30" },
+    },
+    { types: ["operator", "entity", "url"], style: { color: "#a07030" } },
+    { types: ["atrule", "attr-value", "keyword"], style: { color: "#8a5e20" } },
+    { types: ["function", "class-name"], style: { color: "#7a5e1a" } },
+    { types: ["regex", "important", "variable"], style: { color: "#9a6040" } },
+    { types: ["deleted"], style: { color: "#c44040" } },
+    { types: ["inserted"], style: { color: "#4a7c30" } },
+  ],
 };
 
 interface CodeBlockProps {
-    code: string
-    language: Language
+  code: string;
+  language?: string;
 }
 
-export function CodeBlock({ code, language }: CodeBlockProps) {
-      const { theme } = useTheme()
-  const syntaxTheme = theme === "dark" ? nightOwlDark : nightOwlLight
+export function CodeBlock({ code, language = "typescript" }: CodeBlockProps) {
+  const { theme } = useTheme();
+  const syntaxTheme = theme === "dark" ? warmDark : warmLight;
 
-    return (
-        <Highlight code={code.trim()} language={language} theme={syntaxTheme}>
-            {({ className, style, tokens, getLineProps, getTokenProps }) => (
-                <pre
-                    className={`rounded-md p-4 text-sm overflow-x-auto ${className}`}
-                    style={{
-                        ...style,
-                        fontFamily: "JetBrains Mono, Fira Mono, Menlo, Monaco, 'Liberation Mono', 'Courier New', monospace",
-                        fontWeight: 400,
-                        fontSize: "1rem"
-                    }}
+  return (
+    <Highlight
+      code={code.trim()}
+      language={language as Language}
+      theme={syntaxTheme}
+    >
+      {({ className, style, tokens, getLineProps, getTokenProps }) => (
+        <pre
+          className="rounded-xl overflow-x-auto text-[13px] leading-7"
+          style={{
+            ...style,
+            background: "transparent",
+            fontFamily:
+              "'JetBrains Mono', 'Fira Code', ui-monospace, monospace",
+            fontFeatureSettings: "'liga' 1, 'calt' 1",
+            margin: 0,
+            padding: "20px 24px",
+            boxShadow: "none",
+          }}
+        >
+          <code>
+            {tokens.map((line, i) => {
+              const { key: lineKey, ...lineProps } = getLineProps({
+                line,
+                key: i,
+              });
+              return (
+                <div
+                  key={String(lineKey)}
+                  {...lineProps}
+                  className="min-h-[1.75rem]"
                 >
-                    {tokens.map((line, i) => {
-                        const { key: lineKey, ...lineProps } = getLineProps({ line, key: i });
-                        return (
-                            <div key={String(lineKey)} {...lineProps}>
-                                {line.map((token, key) => {
-                                    const { key: tokenKey, ...tokenProps } = getTokenProps({ token, key });
-                                    return <span key={String(tokenKey)} {...tokenProps} />;
-                                })}
-                            </div>
-                        );
-                    })}
-                </pre>
-            )}
-        </Highlight>
-    )
+                  {line.map((token, key) => {
+                    const { key: tokenKey, ...tokenProps } = getTokenProps({
+                      token,
+                      key,
+                    });
+                    return <span key={String(tokenKey)} {...tokenProps} />;
+                  })}
+                </div>
+              );
+            })}
+          </code>
+        </pre>
+      )}
+    </Highlight>
+  );
 }

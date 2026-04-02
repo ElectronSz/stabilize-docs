@@ -1,76 +1,113 @@
-import Link from "next/link"
-import { Github, Twitter, BookOpen, Sparkle, MapPin, Heart } from "lucide-react"
-
-// Replace with your logo import
-import Image from "next/image"
-import logo from "@/public/logo_both-transparent.png"
+import Link from "next/link";
+import { Github, Twitter, Zap } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-accent/20 bg-background/80 backdrop-blur-lg pt-8 pb-4 mt-16">
-      <div className="container mx-auto flex flex-col items-center gap-6 md:flex-row md:items-center md:justify-between">
-        {/* Left: Logo, Brand and tagline */}
-        <div className="flex items-center gap-3 mb-2 md:mb-0">
-          <Image
-            src={logo}
-            alt="Stabilize ORM Logo"
-            className="h-auto w-64 "
-            priority
-          />
-        </div>
+    <footer className="w-full border-t border-border/50 bg-card/30 backdrop-blur-sm">
+      <div className="container py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+          <div className="md:col-span-1">
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-accent text-accent-foreground font-bold text-sm">
+                <Zap className="h-4 w-4" />
+              </div>
+              <span className="font-bold text-lg">Stabilize</span>
+            </Link>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              A modern, type-safe ORM for Bun with unified PostgreSQL, MySQL,
+              and SQLite support.
+            </p>
+          </div>
 
-        {/* Center: Navigation */}
-        <nav className="flex flex-wrap gap-4 items-center text-sm font-medium">
-          <Link href="/docs" className="hover:text-accent transition-colors flex items-center gap-1">
-            <BookOpen className="h-4 w-4" />
-            <span>Docs</span>
-          </Link>
-          <Link href="/features" className="hover:text-accent transition-colors">
-            Features
-          </Link>
-          <Link href="/cli" className="hover:text-accent transition-colors">
-            CLI
-          </Link>
-          <Link href="/data-types" className="hover:text-accent transition-colors">
-            Data Types
-          </Link>
-          <a
-            href="https://github.com/ElectronSz/stabilize"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-accent transition-colors flex items-center gap-1"
-          >
-            <Github className="h-4 w-4" />
-            <span>GitHub</span>
-          </a>
-          <a
-            href="https://twitter.com/th3b0tk1ll3r"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-accent transition-colors flex items-center gap-1"
-          >
-            <Twitter className="h-4 w-4" />
-            <span>Twitter</span>
-          </a>
-        </nav>
+          <div>
+            <h4 className="font-semibold text-sm mb-3">Documentation</h4>
+            <ul className="space-y-2">
+              {[
+                { href: "/docs/quick-start", label: "Quick Start" },
+                { href: "/docs/models", label: "Models" },
+                { href: "/docs/query-builder", label: "Query Builder" },
+                { href: "/docs/cli", label: "CLI" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        {/* Right: Copyright */}
-        <div className="text-xs text-muted-foreground text-center md:text-right mt-2 md:mt-0">
-          © {new Date().getFullYear()} Stabilize ORM. Built by{" "}
-          <a href="https://github.com/ElectronSz" className="underline hover:text-accent">
-            ElectronSz
-          </a>
-          .
+          <div>
+            <h4 className="font-semibold text-sm mb-3">Resources</h4>
+            <ul className="space-y-2">
+              {[
+                { href: "/guides", label: "Guides" },
+                { href: "/api", label: "API Reference" },
+                { href: "/examples", label: "Examples" },
+                { href: "/docs/versioning", label: "Versioning" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-sm mb-3">Community</h4>
+            <ul className="space-y-2">
+              <li>
+                <a
+                  href="https://github.com/ElectronSz/stabilize-orm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                >
+                  <Github className="h-4 w-4" />
+                  GitHub
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://twitter.com/th3b0tk1ll3r"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                >
+                  <Twitter className="h-4 w-4" />
+                  Twitter
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
-      {/* Bottom: Heart and Eswatini */}
-      <div className="flex flex-col items-center mt-6 gap-0">
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <span>Made with</span>
-          <Heart className="h-4 w-4 text-red-500 animate-pulse" fill="currentColor" />
-          <span>in Eswatini</span>
+
+      <div className="border-t border-border/50">
+        <div className="container py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">
+            &copy; {new Date().getFullYear()} Stabilize ORM. Built by{" "}
+            <a
+              href="https://github.com/ElectronSz"
+              className="underline hover:text-foreground"
+            >
+              ElectronSz
+            </a>
+            .
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Made with care in Eswatini
+          </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }
