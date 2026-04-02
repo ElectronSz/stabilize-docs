@@ -19,7 +19,7 @@ export default function SeedingPage() {
               data. Use the CLI to generate and run seed files:
             </p>
             <CodeBlock
-              code="bunx stabilize-cli generate seed User --count 10"
+              code="bunx stabilize-cli generate:seed User --count 10"
               language="bash"
             />
             <CodeBlock code="bunx stabilize-cli seed" language="bash" />

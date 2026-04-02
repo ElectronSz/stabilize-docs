@@ -4,7 +4,7 @@ import { Github, Twitter, Zap } from "lucide-react";
 export function Footer() {
   return (
     <footer className="w-full border-t border-border/50 bg-card/30 backdrop-blur-sm">
-      <div className="container py-12 md:py-16">
+      <div className="max-w-5xl mx-auto px-6 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4">
@@ -71,8 +71,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
                 >
-                  <Github className="h-4 w-4" />
-                  GitHub
+                  <Github className="h-4 w-4" /> GitHub
                 </a>
               </li>
               <li>
@@ -82,8 +81,7 @@ export function Footer() {
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
                 >
-                  <Twitter className="h-4 w-4" />
-                  Twitter
+                  <Twitter className="h-4 w-4" /> Twitter
                 </a>
               </li>
             </ul>
@@ -92,7 +90,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-border/50">
-        <div className="container py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} Stabilize ORM. Built by{" "}
             <a

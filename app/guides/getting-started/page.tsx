@@ -95,7 +95,7 @@ export const User = defineModel({
               Step 5: Create the Table
             </h2>
             <CodeBlock
-              code="bunx stabilize-cli generate migration User"
+              code="bunx stabilize-cli generate:migration User"
               language="bash"
             />
             <CodeBlock code="bunx stabilize-cli migrate" language="bash" />

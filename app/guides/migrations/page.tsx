@@ -20,7 +20,7 @@ export default function MigrationsGuidePage() {
           <section>
             <h2 className="text-2xl font-bold mb-4">CLI Commands</h2>
             <CodeBlock
-              code="bunx stabilize-cli generate migration User"
+              code="bunx stabilize-cli generate:migration User"
               language="bash"
             />
             <CodeBlock code="bunx stabilize-cli migrate" language="bash" />

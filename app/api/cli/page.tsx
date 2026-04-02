@@ -70,19 +70,19 @@ export default function CliApiPage() {
             </ul>
             <h3 className="font-semibold mb-2">Examples:</h3>
             <CodeBlock
-              code="bunx stabilize-cli generate model User name:string age:int"
+              code="bunx stabilize-cli generate:model User name:string age:int"
               language="bash"
             />
             <CodeBlock
-              code="bunx stabilize-cli generate migration User"
+              code="bunx stabilize-cli generate:migration User"
               language="bash"
             />
             <CodeBlock
-              code="bunx stabilize-cli generate seed User --count 10"
+              code="bunx stabilize-cli generate:seed User --count 10"
               language="bash"
             />
             <CodeBlock
-              code="bunx stabilize-cli generate api User --prefix /api"
+              code="bunx stabilize-cli generate:api User --prefix /api"
               language="bash"
             />
           </Card>
@@ -193,7 +193,7 @@ export default function CliApiPage() {
               Generate a REST API scaffold with full CRUD routes from a model.
             </p>
             <CodeBlock
-              code="bunx stabilize-cli generate api <ModelName>"
+              code="bunx stabilize-cli generate:api <ModelName>"
               language="bash"
             />
             <CodeBlock

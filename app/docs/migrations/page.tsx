@@ -19,7 +19,7 @@ export default function MigrationsPage() {
                 Use the CLI to generate migrations from your model definitions:
               </p>
               <CodeBlock
-                code="bunx stabilize-cli generate migration User"
+                code="bunx stabilize-cli generate:migration User"
                 language="bash"
               />
               <p className="text-muted-foreground my-4">

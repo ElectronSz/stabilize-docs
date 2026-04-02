@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CodeBlock } from "@/components/code-block";
 
@@ -24,6 +23,7 @@ const User = defineModel({
     active: (qb) => qb.where("isActive = ?", true),
   },
 });`,
+    lang: "typescript",
   },
   {
     title: "Queries",
@@ -51,6 +51,7 @@ const admins = await userRepo
   .orderBy("createdAt", "DESC")
   .limit(10)
   .execute(orm.client);`,
+    lang: "typescript",
   },
   {
     title: "Versioning",
@@ -73,6 +74,7 @@ const past = await repo.asOf(user.id, someDate);
 
 // Rollback to version 2
 await repo.rollback(user.id, 2);`,
+    lang: "typescript",
   },
   {
     title: "Transactions",
@@ -95,14 +97,15 @@ await repo.rollback(user.id, 2);`,
   // All operations are atomic
   // If any fail, everything rolls back
 });`,
+    lang: "typescript",
   },
   {
     title: "CLI",
     code: `# Generate a model with columns
-bunx stabilize-cli generate model Product name:string price:numeric
+bunx stabilize-cli generate:model Product name:string price:decimal stock:int
 
 # Generate a migration
-bunx stabilize-cli generate migration Product
+bunx stabilize-cli generate:migration Product
 
 # Run all pending migrations
 bunx stabilize-cli migrate
@@ -111,10 +114,11 @@ bunx stabilize-cli migrate
 bunx stabilize-cli db:backup
 
 # Generate a REST API scaffold
-bunx stabilize-cli generate api Product
+bunx stabilize-cli generate:api Product --prefix /api
 
 # Fresh migration (drop + re-migrate)
 bunx stabilize-cli migrate:fresh --force`,
+    lang: "bash",
   },
 ];
 
@@ -132,13 +136,12 @@ export function CodeExample() {
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
             Clean, intuitive, powerful
           </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Write database operations with expressive, type-safe code that reads
-            like prose.
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+            Write database operations with expressive, type-safe code.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-4 justify-center">
+        <div className="flex flex-wrap gap-2 mb-5 justify-center">
           {examples.map((example, index) => (
             <Button
               key={example.title}
@@ -158,11 +161,10 @@ export function CodeExample() {
 
         <CodeBlock
           code={examples[activeTab].code}
-          language={activeTab === 4 ? "bash" : "typescript"}
+          language={examples[activeTab].lang}
           filename={
-            activeTab === 4
-              ? "terminal"
-              : `${examples[activeTab].title.toLowerCase()}.ts`
+            examples[activeTab].title.toLowerCase() +
+            (examples[activeTab].lang === "bash" ? "" : ".ts")
           }
         />
       </div>
