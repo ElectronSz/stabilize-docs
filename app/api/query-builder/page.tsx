@@ -119,6 +119,53 @@ await repo.find().whereLike("email", "%@example.com").execute(orm.client);`}
 
           <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
             <h2 className="text-2xl font-semibold mb-4">
+              orderByRaw() / groupByRaw() / havingRaw()
+            </h2>
+            <CodeBlock
+              language="typescript"
+              code={`orderByRaw(expression: string, direction?: "ASC" | "DESC"): QueryBuilder<T>
+groupByRaw(expression: string): QueryBuilder<T>
+havingRaw(condition: string, ...params: any[]): QueryBuilder<T>`}
+            />
+            <p className="text-muted-foreground mb-4">
+              For expressions rather than column names. Raw and plain clauses
+              compose, and raw parameters are bound in the order they appear.
+            </p>
+            <CodeBlock
+              language="typescript"
+              code={`await repo.find()
+  .select("status", "COUNT(*) AS total")
+  .groupByRaw("strftime('%Y-%m', createdAt)")
+  .havingRaw("COUNT(*) > ?", 10)
+  .orderByRaw("CASE WHEN status = 'urgent' THEN 0 ELSE 1 END")
+  .execute(orm.client);`}
+            />
+          </Card>
+
+          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+            <h2 className="text-2xl font-semibold mb-4">withRelations()</h2>
+            <CodeBlock
+              language="typescript"
+              code={`withRelations(...relations: (string | string[])[]): QueryBuilder<T>
+getRelations(): string[]`}
+            />
+            <p className="text-muted-foreground mb-4">
+              Eager-loads relations onto the result, as{" "}
+              <code>findOne(id, {"{ relations }"})</code> does. Nested paths use
+              dot notation, and the loaded rows are cached with their relations.
+            </p>
+            <CodeBlock
+              language="typescript"
+              code={`const users = await repo.find()
+  .where("isActive = ?", true)
+  .withRelations("roles", "roles.permissions")
+  .limit(10)
+  .execute(orm.client);`}
+            />
+          </Card>
+
+          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+            <h2 className="text-2xl font-semibold mb-4">
               join() / innerJoin() / leftJoin()
             </h2>
             <CodeBlock

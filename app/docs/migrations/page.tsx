@@ -113,6 +113,37 @@ console.log("Down:", migration.down);
                 </li>
               </ul>
             </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">
+                AutoMigrate (GORM-style)
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                For rapid development, use <code>autoMigrate</code> instead of
+                manual migrations. It automatically creates tables and adds
+                missing columns:
+              </p>
+              <CodeBlock
+                filename="app.ts"
+                language="typescript"
+                code={`// Single model
+await orm.autoMigrate(User);
+
+// Multiple models
+await orm.autoMigrate([User, Post, Comment]);`}
+              />
+              <CodeBlock
+                code="bunx stabilize-cli migrate:auto"
+                language="bash"
+              />
+              <p className="text-sm text-muted-foreground mt-2">
+                AutoMigrate is safe — it never deletes data. See the{" "}
+                <a href="/docs/auto-migrate" className="text-accent underline">
+                  AutoMigrate docs
+                </a>{" "}
+                for details.
+              </p>
+            </section>
           </div>
         </div>
       </div>

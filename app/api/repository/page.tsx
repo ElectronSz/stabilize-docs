@@ -66,6 +66,70 @@ const admins = await userRepo.findBy({ role: "admin" }, { limit: 10 });`}
             </Card>
 
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">
+                findOrFail() / firstOrFail()
+              </h2>
+              <CodeBlock
+                language="typescript"
+                code={`async findOrFail(id: number | string, options?, client?): Promise<T>
+async firstOrFail(conditions?: Partial<T>, options?, client?): Promise<T>`}
+              />
+              <p className="text-muted-foreground mb-4">
+                As findOne() and first(), but throws a StabilizeError with code{" "}
+                <code>NOT_FOUND_ERROR</code> instead of returning{" "}
+                <code>null</code>.
+              </p>
+              <CodeBlock
+                language="typescript"
+                code={`const user = await userRepo.findOrFail(id); // never null
+const admin = await userRepo.firstOrFail({ role: "admin" });`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">validateAll()</h2>
+              <CodeBlock
+                language="typescript"
+                code={`validateAll(entity: Partial<T>, skipRequired = false): string[]`}
+              />
+              <p className="text-muted-foreground mb-4">
+                Returns every validation failure rather than throwing on the
+                first, which is what a write path does. Empty when valid.
+              </p>
+              <CodeBlock
+                language="typescript"
+                code={`const errors = userRepo.validateAll({ email: "nope", name: "ab" });
+// ["Field email does not match pattern", "Field name too short"]`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">
+                attach() / detach() / sync()
+              </h2>
+              <CodeBlock
+                language="typescript"
+                code={`async attach(id: number | string, relation: string, targetIds, client?): Promise<number>
+async detach(id: number | string, relation: string, targetIds?, client?): Promise<number>
+async sync(id: number | string, relation: string, targetIds): Promise<{ attached: number; detached: number }>`}
+              />
+              <p className="text-muted-foreground mb-4">
+                Edits a ManyToMany relation&apos;s join table directly.
+                Idempotent, and accept a single id or an array. Omitting the
+                ids from <code>detach()</code> unlinks everything.{" "}
+                <code>sync()</code> makes the link set exactly the given ids
+                and runs in a transaction.
+              </p>
+              <CodeBlock
+                language="typescript"
+                code={`await userRepo.attach(userId, "roles", [1, 2]);
+await userRepo.detach(userId, "roles", [2]);
+await userRepo.sync(userId, "roles", [3, 4]);
+// { attached: 2, detached: 1 }`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">create()</h2>
               <CodeBlock
                 language="typescript"
@@ -182,6 +246,42 @@ async exists(conditions?: Partial<T>): Promise<boolean>`}
                 code={`const total = await userRepo.count();
 const activeCount = await userRepo.count({ isActive: true });
 const exists = await userRepo.exists({ email: "alice@example.com" });`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">findAndCountAll()</h2>
+              <CodeBlock
+                language="typescript"
+                code={`async findAndCountAll(options?: {
+  page?: number;
+  pageSize?: number;
+  conditions?: Partial<T>;
+}): Promise<{ data: T[]; total: number }>`}
+              />
+              <CodeBlock
+                language="typescript"
+                code={`// Fetch page 1 with 20 items and total count
+const { data, total } = await userRepo.findAndCountAll({
+  page: 1,
+  pageSize: 20,
+  conditions: { isActive: true },
+});
+console.log(\`Showing \${data.length} of \${total} users\`);`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">toJSON()</h2>
+              <CodeBlock
+                language="typescript"
+                code={`toJSON(entity: T): Record<string, any>`}
+              />
+              <CodeBlock
+                language="typescript"
+                code={`const user = await userRepo.findOne(id);
+const clean = userRepo.toJSON(user);
+// Excludes soft delete field, returns plain object`}
               />
             </Card>
 

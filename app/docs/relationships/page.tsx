@@ -59,7 +59,9 @@ export const User = defineModel({
       type: RelationType.OneToMany,
       target: () => Post,
       property: "posts",
-      foreignKey: "authorId",
+      // The key lives on the target table, so a OneToMany names it with
+      // inverseKey. foreignKey is accepted here too, as a synonym.
+      inverseKey: "authorId",
     },
   ],
 });
@@ -162,6 +164,87 @@ export const Role = defineModel({
     },
   ],
 });`}
+            />
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">Eager Loading</h2>
+            <p className="text-muted-foreground mb-4">
+              Pass <code>relations</code> to load related rows alongside the
+              parent. Each relation is fetched with one batched query, so a
+              to-many relation is never truncated by a <code>LIMIT</code> and
+              never multiplies the parent rows. A to-many relation comes back
+              as an array (empty when nothing is linked), a to-one relation as
+              the row or <code>null</code>.
+            </p>
+            <CodeBlock
+              filename="examples/eager-loading.ts"
+              language="typescript"
+              code={`const userRepo = orm.getRepository(User);
+const postRepo = orm.getRepository(Post);
+
+// Nested paths use dot notation
+const user = await userRepo.findOne(1, {
+  relations: ["posts", "profile"],
+});
+user.posts;  // Post[] — empty array if the user has none
+user.profile; // Profile | null
+
+// The same option is accepted by create, bulkCreate, findMany,
+// findBy, findOneBy and findAndCount
+const posts = await postRepo.findBy(
+  { authorId: 1 },
+  { relations: ["author"] },
+);`}
+            />
+            <p className="text-muted-foreground mt-4 mb-4">
+              On the query builder, use <code>withRelations()</code>, which
+              composes with <code>where</code>, <code>limit</code> and{" "}
+              <code>paginate</code>:
+            </p>
+            <CodeBlock
+              filename="examples/with-relations.ts"
+              language="typescript"
+              code={`const users = await userRepo
+  .find()
+  .where("isActive = ?", true)
+  .withRelations("posts", "posts.comments")
+  .limit(10)
+  .execute(orm.client);`}
+            />
+            <p className="text-muted-foreground mt-4">
+              Related rows are read through the target model, so its soft-delete
+              filter applies: a deleted child is not returned as part of its
+              parent.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-semibold mb-4">
+              Managing Many-to-Many Links
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              <code>attach</code>, <code>detach</code> and <code>sync</code>{" "}
+              write the join table directly, so a relation can be edited without
+              loading and re-saving either side.
+            </p>
+            <CodeBlock
+              filename="examples/link-management.ts"
+              language="typescript"
+              code={`const userRepo = orm.getRepository(User);
+
+// Links roles 1 and 2; already-linked pairs are left alone
+await userRepo.attach(userId, "roles", [1, 2]);
+
+// Unlinks role 2, or every role when no ids are given
+await userRepo.detach(userId, "roles", [2]);
+await userRepo.detach(userId, "roles");
+
+// Makes the link set exactly [3, 4] and reports what changed
+const { attached, detached } = await userRepo.sync(userId, "roles", [3, 4]);
+
+// Link management needs a ManyToMany relation; anything else throws
+await userRepo.attach(userId, "profile", [1]); // StabilizeError`}
             />
           </section>
 

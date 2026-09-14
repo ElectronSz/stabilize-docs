@@ -4,309 +4,433 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Terminal,
-  HardDrive,
-  RotateCcw,
+  Database,
+  GitBranch,
   FileCode2,
-  BarChart3,
+  HardDrive,
+  Search,
+  Layers,
+  Code2,
+  Settings,
+  Beaker,
 } from "lucide-react";
-import { CodeBlock } from "@/components/code-block";
+
+function TBlock({
+  children,
+  title,
+}: {
+  children: React.ReactNode;
+  title?: string;
+}) {
+  return (
+    <div className="rounded-xl overflow-hidden border border-border/60 bg-[#1a1a1a] my-3">
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-[#2a2a2a] border-b border-white/5">
+        <div className="flex gap-1.5">
+          <div className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+          <div className="h-3 w-3 rounded-full bg-[#febc2e]" />
+          <div className="h-3 w-3 rounded-full bg-[#28c840]" />
+        </div>
+        <span className="text-xs text-white/40 ml-3 font-mono">
+          {title || "terminal"}
+        </span>
+      </div>
+      <div className="p-4 font-mono text-[13px] leading-7">{children}</div>
+    </div>
+  );
+}
+
+function P({ cmd }: { cmd: string }) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="text-[#28c840] select-none shrink-0">❯</span>
+      <span className="text-white/90">{cmd}</span>
+    </div>
+  );
+}
+
+function Section({
+  icon: I,
+  label,
+  children,
+}: {
+  icon: any;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="mb-8">
+      <div className="flex items-center gap-2 mb-3">
+        <I className="h-5 w-5 text-accent" />
+        <h2 className="text-2xl font-bold">{label}</h2>
+      </div>
+      {children}
+    </div>
+  );
+}
 
 export default function CliApiPage() {
   return (
     <div className="container py-12 md:py-16">
       <div className="mx-auto max-w-4xl">
-        <h1 className="text-4xl font-bold mb-4">CLI Commands</h1>
+        <h1 className="text-4xl font-bold mb-2">CLI Commands</h1>
         <p className="text-lg text-muted-foreground mb-8">
-          Command-line interface reference for Stabilize CLI v2.1.0
+          Stabilize CLI v2.2.0 — 31 commands with shorthand aliases
         </p>
 
-        <div className="space-y-8">
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Terminal className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">generate</h2>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Generate a new model, migration, seed, or API scaffold.
+        <Section icon={FileCode2} label="Generate">
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              generate:model &lt;name&gt; [fields...]
+            </code>
+            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-mono">
+              g:m
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Generate a model file. Pass columns as field:type.
             </p>
-            <CodeBlock
-              code="bunx stabilize-cli generate <type> <name> [fields...]"
-              language="bash"
-            />
-            <h3 className="font-semibold mb-2">Types:</h3>
-            <ul className="space-y-2 mb-4">
-              <li>
-                <Badge variant="outline" className="mr-2">
-                  model
-                </Badge>{" "}
-                <span className="text-muted-foreground">
-                  Generate a model file with columns
-                </span>
-              </li>
-              <li>
-                <Badge variant="outline" className="mr-2">
-                  migration
-                </Badge>{" "}
-                <span className="text-muted-foreground">
-                  Generate a migration file from a model
-                </span>
-              </li>
-              <li>
-                <Badge variant="outline" className="mr-2">
-                  seed
-                </Badge>{" "}
-                <span className="text-muted-foreground">
-                  Generate a seed file for a model
-                </span>
-              </li>
-              <li>
-                <Badge variant="outline" className="mr-2">
-                  api
-                </Badge>{" "}
-                <span className="text-muted-foreground">
-                  Generate a REST API scaffold from a model
-                </span>
-              </li>
-            </ul>
-            <h3 className="font-semibold mb-2">Examples:</h3>
-            <CodeBlock
-              code="bunx stabilize-cli generate:model User name:string age:int"
-              language="bash"
-            />
-            <CodeBlock
-              code="bunx stabilize-cli generate:migration User"
-              language="bash"
-            />
-            <CodeBlock
-              code="bunx stabilize-cli generate:seed User --count 10"
-              language="bash"
-            />
-            <CodeBlock
-              code="bunx stabilize-cli generate:api User --prefix /api"
-              language="bash"
-            />
+            <TBlock>
+              <P cmd="stabilize-cli generate:model User name:string email:string age:int --versioned" />
+            </TBlock>
           </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              generate:migration &lt;name&gt;
+            </code>
+            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-mono">
+              g:mg
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Generate a migration JSON from an existing model.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli generate:migration User" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              generate:seed &lt;name&gt;
+            </code>
+            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-mono">
+              g:s
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Generate a seed file with sample data.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli generate:seed User --count 10" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              generate:api &lt;name&gt;
+            </code>
+            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-mono">
+              g:a
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Generate REST API scaffold. Creates model if missing.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli generate:api Product --prefix /v1" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              generate:all &lt;name&gt; [fields...]
+            </code>
+            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-mono">
+              g:x
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Generate model + migration + seed together.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli generate:all Product name:string price:decimal --count 10" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              generate:test &lt;name&gt;
+            </code>
+            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-mono">
+              g:t
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Generate vitest test file with CRUD stubs.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli generate:test User" />
+            </TBlock>
+          </Card>
+        </Section>
 
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Terminal className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">migrate</h2>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Apply, rollback, or fresh-start migrations.
+        <Section icon={GitBranch} label="Migrate">
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              migrate
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Apply all pending migrations.
             </p>
-            <CodeBlock code="bunx stabilize-cli migrate" language="bash" />
-            <CodeBlock
-              code="bunx stabilize-cli migrate:rollback"
-              language="bash"
-            />
-            <CodeBlock
-              code="bunx stabilize-cli migrate:fresh --force"
-              language="bash"
-            />
-            <p className="text-sm text-muted-foreground mt-2">
-              <code>migrate:fresh</code> drops all tables and re-applies
-              migrations (no seed).
-            </p>
+            <TBlock>
+              <P cmd="stabilize-cli migrate" />
+            </TBlock>
           </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              migrate:rollback
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Roll back the most recent migration.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli migrate:rollback" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              migrate:fresh
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Drop all tables and re-run migrations. No seed.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli migrate:fresh --force" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              migrate:status
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Detailed migration status with timestamps.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli migrate:status" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              migrate:pending
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Show only pending migrations.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli migrate:pending" />
+            </TBlock>
+          </Card>
+        </Section>
 
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <HardDrive className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">db:backup</h2>
-              <Badge variant="secondary">New</Badge>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Backup the database to a timestamped file.
+        <Section icon={Database} label="Database">
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:drop
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Drop all tables.
             </p>
-            <CodeBlock code="bunx stabilize-cli db:backup" language="bash" />
-            <CodeBlock
-              code="bunx stabilize-cli db:backup --output ./my-backups"
-              language="bash"
-            />
-            <h3 className="font-semibold mb-2">Options:</h3>
-            <ul className="space-y-2 mb-4">
-              <li>
-                <Badge variant="outline" className="mr-2">
-                  --output
-                </Badge>{" "}
-                <span className="text-muted-foreground">
-                  Backup output directory (default: backups/)
-                </span>
-              </li>
-              <li>
-                <Badge variant="outline" className="mr-2">
-                  --config
-                </Badge>{" "}
-                <span className="text-muted-foreground">
-                  Path to database config file
-                </span>
-              </li>
-            </ul>
+            <TBlock>
+              <P cmd="stabilize-cli db:drop --force" />
+            </TBlock>
           </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:reset
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Drop, migrate, and seed in one command.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli db:reset --force" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:truncate [table]
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Truncate a specific table or all tables.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli db:truncate users --force" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:backup
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Backup database to timestamped file.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli db:backup --output ./backups" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:restore &lt;file&gt;
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Restore from backup file.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli db:restore backups/backup.db --force" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:tables
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              List all tables with row counts.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli db:tables" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:size
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Database size statistics.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli db:size" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:diff
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Compare models vs database schema.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli db:diff" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:console
+            </code>
+            <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-accent/10 text-accent font-mono">
+              db:sql
+            </span>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Interactive SQL REPL.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli db:console" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              db:table:info &lt;table&gt;
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Show column details for a specific table.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli db:table:info users" />
+            </TBlock>
+          </Card>
+        </Section>
 
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <RotateCcw className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">db:restore</h2>
-              <Badge variant="secondary">New</Badge>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Restore the database from a backup file.
+        <Section icon={Code2} label="Model & Config">
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              model:validate
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Validate all model files for errors.
             </p>
-            <CodeBlock
-              code="bunx stabilize-cli db:restore <file>"
-              language="bash"
-            />
-            <CodeBlock
-              code="bunx stabilize-cli db:restore backups/backup_20250101120000.db --force"
-              language="bash"
-            />
-            <h3 className="font-semibold mb-2">Options:</h3>
-            <ul className="space-y-2 mb-4">
-              <li>
-                <Badge variant="outline" className="mr-2">
-                  --force
-                </Badge>{" "}
-                <span className="text-muted-foreground">
-                  Skip confirmation prompt
-                </span>
-              </li>
-              <li>
-                <Badge variant="outline" className="mr-2">
-                  --config
-                </Badge>{" "}
-                <span className="text-muted-foreground">
-                  Path to database config file
-                </span>
-              </li>
-            </ul>
+            <TBlock>
+              <P cmd="stabilize-cli model:validate" />
+            </TBlock>
           </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              model:info &lt;name&gt;
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Show columns, relations, scopes for a model.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli model:info User" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              config:init
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Scaffold a starter config/database.ts file.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli config:init --type postgres" />
+            </TBlock>
+          </Card>
+        </Section>
 
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <FileCode2 className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">generate:api</h2>
-              <Badge variant="secondary">New</Badge>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Generate a REST API scaffold with full CRUD routes from a model.
+        <Section icon={Search} label="Diagnostics">
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              status
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Migration and seed status with health check.
             </p>
-            <CodeBlock
-              code="bunx stabilize-cli generate:api <ModelName>"
-              language="bash"
-            />
-            <CodeBlock
-              code="bunx stabilize-cli g:api Product --prefix /v1"
-              language="bash"
-            />
-            <h3 className="font-semibold mb-2">Options:</h3>
-            <ul className="space-y-2 mb-4">
-              <li>
-                <Badge variant="outline" className="mr-2">
-                  --prefix
-                </Badge>{" "}
-                <span className="text-muted-foreground">
-                  API route prefix (default: /api)
-                </span>
-              </li>
-            </ul>
+            <TBlock>
+              <P cmd="stabilize-cli status" />
+            </TBlock>
           </Card>
-
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <BarChart3 className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">db:size</h2>
-              <Badge variant="secondary">New</Badge>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Show database and table size statistics.
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              health
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Database and cache health check.
             </p>
-            <CodeBlock code="bunx stabilize-cli db:size" language="bash" />
-            <p className="text-sm text-muted-foreground">
-              Displays file size (SQLite), table names, row counts, and table
-              sizes (Postgres/MySQL).
-            </p>
+            <TBlock>
+              <P cmd="stabilize-cli health" />
+            </TBlock>
           </Card>
-
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Terminal className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">db:drop</h2>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Drop all tables in the database.{" "}
-              <span className="font-semibold text-red-500">
-                Use with caution!
-              </span>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              health:json
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              JSON output for CI/CD automation.
             </p>
-            <CodeBlock
-              code="bunx stabilize-cli db:drop --force"
-              language="bash"
-            />
+            <TBlock>
+              <P cmd="stabilize-cli health:json" />
+            </TBlock>
           </Card>
-
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Terminal className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">db:reset</h2>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Drop, migrate, and seed your database in one command.
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              query &lt;sql&gt;
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Execute raw SQL and display results.
             </p>
-            <CodeBlock
-              code="bunx stabilize-cli db:reset --force"
-              language="bash"
-            />
+            <TBlock>
+              <P cmd="stabilize-cli query 'SELECT * FROM users LIMIT 5'" />
+            </TBlock>
           </Card>
-
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Terminal className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">status</h2>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Show migration and seed status.
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              info
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              CLI version, runtime, platform info.
             </p>
-            <CodeBlock code="bunx stabilize-cli status" language="bash" />
+            <TBlock>
+              <P cmd="stabilize-cli info" />
+            </TBlock>
           </Card>
-
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Terminal className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">health</h2>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Check database and cache health.
-            </p>
-            <CodeBlock code="bunx stabilize-cli health" language="bash" />
-          </Card>
-
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Terminal className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">query</h2>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Execute a raw SQL query and display results.
-            </p>
-            <CodeBlock
-              code="bunx stabilize-cli query 'SELECT * FROM users LIMIT 5'"
-              language="bash"
-            />
-          </Card>
-
-          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <Terminal className="h-6 w-6 text-accent" />
-              <h2 className="text-2xl font-semibold">info</h2>
-            </div>
-            <p className="text-muted-foreground mb-4">
-              Show CLI version, runtime, and environment information.
-            </p>
-            <CodeBlock code="bunx stabilize-cli info" language="bash" />
-          </Card>
-        </div>
+        </Section>
       </div>
     </div>
   );

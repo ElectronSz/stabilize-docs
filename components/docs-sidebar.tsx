@@ -43,6 +43,7 @@ const docsSections = [
     items: [
       { title: "Overview", href: "/docs/cli" },
       { title: "Migrations", href: "/docs/migrations" },
+      { title: "AutoMigrate", href: "/docs/auto-migrate" },
       { title: "Seeding", href: "/docs/seeding" },
     ],
   },
