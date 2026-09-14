@@ -12,6 +12,7 @@ import {
   Settings,
   Beaker,
   Zap,
+  ShieldAlert,
 } from "lucide-react";
 
 function TerminalBlock({
@@ -250,7 +251,7 @@ export default function CLIPage() {
           />
           <Cmd
             name="migrate:auto"
-            desc="GORM-style auto migrate: create tables, add missing columns and indexes. Never deletes."
+            desc="GORM-style auto migrate: create tables, add missing columns and indexes. Never deletes. Reads the models the project itself loaded, and reports any model whose table could not be created."
             flags={["-c, --config <path>"]}
             example="stabilize-cli migrate:auto"
           />
@@ -381,6 +382,50 @@ export default function CLIPage() {
             desc="Show CLI version, runtime, platform, and all commands."
             example="stabilize-cli info"
           />
+        </Section>
+
+        <Section icon={ShieldAlert} label="Confirmation & Safety">
+          <p className="text-muted-foreground mb-4">
+            Commands that destroy data — <code>migrate:fresh</code>,{" "}
+            <code>db:drop</code>, <code>db:reset</code>, <code>db:truncate</code>{" "}
+            and <code>db:restore</code> — ask before they act:
+          </p>
+          <TerminalBlock title="terminal">
+            <Prompt cmd="stabilize-cli db:drop" />
+            <Out color="text-[#febc2e]">
+              ⚠ Drop ALL TABLES in &apos;test.db&apos;? This cannot be undone.
+              (y/N)
+            </Out>
+          </TerminalBlock>
+          <p className="text-muted-foreground my-4">
+            Anything other than <code>y</code> aborts and changes nothing. With
+            no terminal attached — a CI runner, a piped script,{" "}
+            <code>docker run</code> without <code>-t</code> — there is nobody to
+            answer, so the CLI refuses rather than waiting forever on a question
+            that can never be answered:
+          </p>
+          <TerminalBlock title="terminal">
+            <Prompt cmd="stabilize-cli db:drop < /dev/null" />
+            <Out color="text-[#febc2e]">
+              ⚠ Drop ALL TABLES in &apos;test.db&apos;? This cannot be undone.
+            </Out>
+            <Out color="text-[#febc2e]">
+              Refusing to proceed without confirmation — stdin is not a
+              terminal. Pass --force to proceed.
+            </Out>
+          </TerminalBlock>
+          <div className="rounded-xl border border-accent/30 bg-accent/5 p-5 mt-4">
+            <p className="text-sm font-semibold mb-2">
+              <code>--force</code> is how you say yes from a script
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Every one of these commands takes <code>-f, --force</code>, which
+              skips the prompt entirely. That is the supported way to run a
+              destructive command unattended — nothing else opts in, so an
+              accidental <code>db:drop</code> in a pipeline stops instead of
+              taking your data with it.
+            </p>
+          </div>
         </Section>
 
         <Section icon={Zap} label="Typical Workflow">
