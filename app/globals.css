@@ -65,8 +65,8 @@
 }
 
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-sans: "Inter", "system-ui", -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -107,39 +107,71 @@
   body {
     @apply bg-background text-foreground;
   }
-  /* Adding proper container padding for all screen sizes */
   .container {
     @apply px-4 sm:px-6 lg:px-8;
   }
 }
 
-/* Space-themed animations */
+/* ─── ANIMATIONS ──────────────────────────────────────── */
+
 @keyframes float {
   0%,
   100% {
     transform: translateY(0px);
   }
   50% {
-    transform: translateY(-20px);
+    transform: translateY(-12px);
   }
 }
 
 @keyframes glow {
   0%,
   100% {
-    opacity: 0.5;
+    opacity: 0.4;
   }
   50% {
-    opacity: 1;
+    opacity: 0.8;
   }
 }
 
 @keyframes shimmer {
   0% {
-    background-position: -1000px 0;
+    background-position: -200% 0;
   }
   100% {
-    background-position: 1000px 0;
+    background-position: 200% 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
   }
 }
 
@@ -152,85 +184,169 @@
 }
 
 .animate-shimmer {
-  animation: shimmer 8s linear infinite;
-  background-size: 2000px 100%;
+  animation: shimmer 3s linear infinite;
+  background-size: 200% 100%;
 }
 
-/* Updated space gradient to work in both light and dark modes */
-.space-gradient {
-  background: linear-gradient(135deg, oklch(0.05 0.01 264) 0%, oklch(0.08 0.03 280) 50%, oklch(0.06 0.02 250) 100%);
+.animate-fade-in {
+  animation: fade-in 0.6s ease-out forwards;
 }
 
-.dark .space-gradient {
-  background: linear-gradient(135deg, oklch(0.05 0.01 264) 0%, oklch(0.08 0.03 280) 50%, oklch(0.06 0.02 250) 100%);
+.animate-slide-up {
+  animation: slide-up 0.8s ease-out forwards;
 }
 
-:root:not(.dark) .space-gradient {
-  background: linear-gradient(135deg, oklch(0.92 0.01 264) 0%, oklch(0.95 0.02 280) 50%, oklch(0.93 0.01 250) 100%);
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
 }
 
-.star-field {
-  background-image: radial-gradient(2px 2px at 20% 30%, white, transparent),
-    radial-gradient(2px 2px at 60% 70%, white, transparent), radial-gradient(1px 1px at 50% 50%, white, transparent),
-    radial-gradient(1px 1px at 80% 10%, white, transparent), radial-gradient(2px 2px at 90% 60%, white, transparent),
-    radial-gradient(1px 1px at 33% 80%, white, transparent), radial-gradient(1px 1px at 15% 90%, white, transparent);
-  background-size: 200% 200%;
-  background-position: 0% 0%;
-  opacity: 0.3;
+/* ─── GRADIENTS ───────────────────────────────────────── */
+
+.hero-gradient {
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      oklch(0.62 0.2 42 / 0.15) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 80% 50%,
+      oklch(0.55 0.18 45 / 0.08) 0%,
+      transparent 50%
+    );
 }
 
-/* Light mode star field with darker stars */
-:root:not(.dark) .star-field {
-  background-image: radial-gradient(2px 2px at 20% 30%, oklch(0.3 0 0), transparent),
-    radial-gradient(2px 2px at 60% 70%, oklch(0.3 0 0), transparent),
-    radial-gradient(1px 1px at 50% 50%, oklch(0.3 0 0), transparent),
-    radial-gradient(1px 1px at 80% 10%, oklch(0.3 0 0), transparent),
-    radial-gradient(2px 2px at 90% 60%, oklch(0.3 0 0), transparent),
-    radial-gradient(1px 1px at 33% 80%, oklch(0.3 0 0), transparent),
-    radial-gradient(1px 1px at 15% 90%, oklch(0.3 0 0), transparent);
-  opacity: 0.15;
+.dark .hero-gradient {
+  background:
+    radial-gradient(
+      ellipse at 50% 0%,
+      oklch(0.68 0.22 42 / 0.2) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse at 80% 50%,
+      oklch(0.55 0.25 180 / 0.1) 0%,
+      transparent 50%
+    );
 }
 
-/* Syntax highlighting styles for code blocks */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    oklch(0.55 0.2 42),
+    oklch(0.62 0.18 25),
+    oklch(0.5 0.15 60)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dark .gradient-text {
+  background: linear-gradient(
+    135deg,
+    oklch(0.75 0.2 42),
+    oklch(0.8 0.18 25),
+    oklch(0.7 0.15 60)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--card) 0%,
+    oklch(from var(--card) l c h / 0.5) 100%
+  );
+}
+
+/* ─── GRID PATTERN ────────────────────────────────────── */
+
+.grid-pattern {
+  background-image:
+    linear-gradient(oklch(from var(--border) l c h / 0.3) 1px, transparent 1px),
+    linear-gradient(
+      90deg,
+      oklch(from var(--border) l c h / 0.3) 1px,
+      transparent 1px
+    );
+  background-size: 60px 60px;
+}
+
+/* ─── NOISE TEXTURE ───────────────────────────────────── */
+
+.noise-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── CODE BLOCK STYLES ───────────────────────────────── */
+
 .token-keyword {
-  color: oklch(0.65 0.22 310);
+  color: oklch(0.6 0.22 30);
 }
 
 .token-string {
-  color: oklch(0.65 0.18 140);
+  color: oklch(0.55 0.15 150);
 }
 
 .token-comment {
-  color: oklch(0.55 0.05 264);
+  color: oklch(0.5 0.03 50);
   font-style: italic;
 }
 
 .token-function {
-  color: oklch(0.65 0.2 60);
+  color: oklch(0.6 0.18 60);
 }
 
 .token-number {
-  color: oklch(0.65 0.18 180);
+  color: oklch(0.55 0.18 200);
 }
 
-/* Light mode syntax highlighting */
-:root:not(.dark) .token-keyword {
-  color: oklch(0.45 0.22 310);
+.dark .token-keyword {
+  color: oklch(0.72 0.22 30);
 }
 
-:root:not(.dark) .token-string {
-  color: oklch(0.45 0.18 140);
+.dark .token-string {
+  color: oklch(0.7 0.15 150);
 }
 
-:root:not(.dark) .token-comment {
-  color: oklch(0.5 0.05 264);
+.dark .token-comment {
+  color: oklch(0.55 0.03 50);
   font-style: italic;
 }
 
-:root:not(.dark) .token-function {
-  color: oklch(0.45 0.2 60);
+.dark .token-function {
+  color: oklch(0.72 0.18 60);
 }
 
-:root:not(.dark) .token-number {
-  color: oklch(0.45 0.18 180);
+.dark .token-number {
+  color: oklch(0.68 0.18 200);
+}
+
+/* ─── SCROLLBAR ───────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(from var(--muted-foreground) l c h / 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(from var(--muted-foreground) l c h / 0.5);
 }
