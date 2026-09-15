@@ -14,7 +14,7 @@ const guides = [
   {
     icon: Database,
     title: "Database Setup",
-    description: "Configure PostgreSQL, MySQL, or SQLite for your project",
+    description: "Configure PostgreSQL, MySQL, SQLite, or SQL Server for your project",
     href: "/guides/database-setup",
     difficulty: "Beginner",
   },

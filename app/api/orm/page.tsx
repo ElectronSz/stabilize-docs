@@ -22,8 +22,9 @@ export default function StabilizeApiPage() {
                 language="typescript"
                 code={`new Stabilize(
   config: DBConfig,
-  cacheConfig?: CacheConfig,
-  loggerConfig?: LoggerConfig
+  cacheConfig: CacheConfig = { enabled: false, ttl: 60 },
+  loggerConfig: LoggerConfig = {},
+  existingClient?: DBClient
 )`}
               />
               <h3 className="font-semibold mb-2">Parameters:</h3>
@@ -41,7 +42,9 @@ export default function StabilizeApiPage() {
                     cacheConfig
                   </Badge>{" "}
                   <span className="text-muted-foreground">
-                    Cache configuration (optional)
+                    Cache configuration. Defaults to{" "}
+                    <code>{`{ enabled: false, ttl: 60 }`}</code> — caching is off
+                    unless you turn it on.
                   </span>
                 </li>
                 <li>
@@ -49,7 +52,18 @@ export default function StabilizeApiPage() {
                     loggerConfig
                   </Badge>{" "}
                   <span className="text-muted-foreground">
-                    Logger configuration (optional)
+                    Logger configuration. Defaults to <code>{`{}`}</code>.
+                  </span>
+                </li>
+                <li>
+                  <Badge variant="outline" className="mr-2">
+                    existingClient
+                  </Badge>{" "}
+                  <span className="text-muted-foreground">
+                    An already-open <code>DBClient</code> to use instead of
+                    opening a new connection. When one is supplied, the cache is
+                    not created and no <code>connection:open</code> event is
+                    emitted for it.
                   </span>
                 </li>
               </ul>
@@ -79,13 +93,59 @@ const orm = new Stabilize(
             </Card>
 
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">DBType</h2>
+              <CodeBlock
+                language="typescript"
+                code={`export enum DBType {
+  Postgres = "postgres",
+  MySQL    = "mysql",
+  SQLite   = "sqlite",
+  MSSQL    = "mssql",
+}`}
+              />
+              <p className="text-muted-foreground mb-4">
+                A <strong>string</strong> enum, not a numeric one, so the member
+                value is the lowercase string on the right and it is what
+                appears in DDL and in <code>healthCheck()</code> output.
+              </p>
+              <p className="text-muted-foreground mb-4">
+                All four dialects are supported targets. The driver behind{" "}
+                <code>MSSQL</code> is SQL Server, reached through the{" "}
+                <code>mssql</code> package; it is the newest of the four and the
+                one whose dialect support differs most from the others &mdash;
+                no <code>FOR UPDATE</code> clause, no{" "}
+                <code>BEGIN</code>/<code>COMMIT</code> text, a server-side
+                transaction object, and <code>INT IDENTITY(1,1)</code> rather
+                than auto-increment syntax.
+              </p>
+              <CodeBlock
+                filename="example/db-type.ts"
+                language="typescript"
+                code={`// PostgreSQL
+new Stabilize({ type: DBType.Postgres, connectionString: process.env.DATABASE_URL! });
+
+// MySQL / MariaDB
+new Stabilize({ type: DBType.MySQL, connectionString: process.env.MYSQL_URL! });
+
+// SQLite
+new Stabilize({ type: DBType.SQLite, connectionString: "./data/app.db" });
+
+// SQL Server
+new Stabilize({ type: DBType.MSSQL, connectionString: process.env.MSSQL_URL! });`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
               <h2 className="text-2xl font-semibold mb-4">getRepository()</h2>
               <CodeBlock
                 language="typescript"
-                code={`getRepository<T>(model: ModelClass): Repository<T>`}
+                code={`getRepository<T>(model: new (...args: any[]) => T): Repository<T>`}
               />
               <p className="text-muted-foreground mb-4">
                 Gets a repository for a model to perform CRUD operations.
+                Memoised per model: repeated calls with the same class return
+                the <em>same</em> <code>Repository</code> instance, so it is
+                safe to call this on every request.
               </p>
               <CodeBlock
                 language="typescript"
@@ -145,17 +205,80 @@ console.log(\`Hits: \${stats.hits}, Misses: \${stats.misses}, Keys: \${stats.key
             </Card>
 
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
-              <h2 className="text-2xl font-semibold mb-4">Other Methods</h2>
+              <h2 className="text-2xl font-semibold mb-4">Properties</h2>
               <CodeBlock
                 language="typescript"
-                code={`// Execute raw SQL
-const results = await orm.rawQuery("SELECT * FROM users WHERE age > ?", [18]);
-const { affectedRows } = await orm.rawExec("UPDATE users SET active = 0 WHERE lastLogin < ?", [oneYearAgo]);
+                code={`class Stabilize {
+  // The underlying DBClient. Pass this to a repository method's trailing
+  // \`client\` argument to run that call on a specific connection.
+  public client: DBClient;
 
-// Pool statistics
-const poolStats = await orm.poolStats();
+  // Process-wide event emitter. See the Events page.
+  public events: StabilizeEmitter;
+}`}
+              />
+            </Card>
 
-// Close connection (call on shutdown)
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">Raw SQL</h2>
+              <CodeBlock
+                language="typescript"
+                code={`async rawQuery<T = any>(query: string, params?: any[]): Promise<T[]>
+async rawExec(query: string, params?: any[]): Promise<{ affectedRows: number }>`}
+              />
+              <p className="text-muted-foreground mb-4">
+                Both default <code>params</code> to <code>[]</code>.{" "}
+                <code>rawQuery</code> returns the rows; <code>rawExec</code>{" "}
+                returns the driver&apos;s affected-row count.
+              </p>
+              <CodeBlock
+                language="typescript"
+                code={`const results = await orm.rawQuery("SELECT * FROM users WHERE age > ?", [18]);
+const { affectedRows } = await orm.rawExec("UPDATE users SET active = 0 WHERE lastLogin < ?", [oneYearAgo]);`}
+              />
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">Schema Methods</h2>
+              <CodeBlock
+                language="typescript"
+                code={`async migrate(config: DBConfig, migrations: Migration[]): Promise<void>
+async autoMigrate(models: any | any[]): Promise<void>
+async seed(seeds?: any[]): Promise<void>
+async reset(models: any | any[]): Promise<void>`}
+              />
+              <p className="text-muted-foreground mb-4">
+                Thin wrappers over the migration and seeding functions.{" "}
+                <code>autoMigrate</code> creates missing tables, columns and
+                indexes; <code>seed()</code> with no argument runs the seeds
+                registered with <code>defineSeed()</code>; <code>reset()</code>{" "}
+                drops each model&apos;s table and history table before
+                re-running <code>autoMigrate</code>. These are{" "}
+                <strong>destructive</strong> — see the Migrations guide.
+              </p>
+            </Card>
+
+            <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
+              <h2 className="text-2xl font-semibold mb-4">
+                Pool Stats &amp; Shutdown
+              </h2>
+              <CodeBlock
+                language="typescript"
+                code={`async poolStats(): Promise<{ active: number; idle: number; total: number }>
+async close(): Promise<void>`}
+              />
+              <p className="text-muted-foreground mb-4">
+                <code>poolStats()</code> reports the driver pool where the
+                dialect exposes one (SQL Server) and falls back to{" "}
+                <code>{`{ active: -1, idle: -1, total: -1 }`}</code> when it
+                cannot — check for a negative <code>total</code> before
+                displaying it. <code>close()</code> emits{" "}
+                <code>connection:close</code>, closes the database connection
+                and disconnects the cache; call it on shutdown.
+              </p>
+              <CodeBlock
+                language="typescript"
+                code={`const poolStats = await orm.poolStats();
 await orm.close();`}
               />
             </Card>

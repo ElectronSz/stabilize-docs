@@ -4,8 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function QueryBuilderPage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl font-bold mb-4">Query Builder</h1>
         <p className="text-lg text-muted-foreground mb-8">
           Build complex queries with a fluent, chainable API. The QueryBuilder
@@ -257,7 +256,6 @@ const { query, params } = qb.build();
             />
           </section>
         </div>
-      </div>
     </div>
   );
 }

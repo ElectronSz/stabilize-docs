@@ -4,9 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function HooksPage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="flex justify-center">
-        <div className="w-full max-w-4xl mx-auto px-4 md:px-6">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
           <h1 className="text-4xl font-bold mb-4">Lifecycle Hooks</h1>
           <p className="text-lg text-muted-foreground mb-8">
             Execute custom logic before and after database operations
@@ -124,99 +122,154 @@ registerHooks(User, {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">Event System</h2>
+              <h2 className="text-2xl font-semibold mb-4">
+                Hooks in defineModel
+              </h2>
               <p className="text-muted-foreground mb-4">
-                Stabilize also provides an event emitter for ORM-level events.
-                Use <code>orm.events.on()</code> to listen:
+                <code>registerHooks()</code> is not the only entry point. Hooks
+                can also be declared inline on the model, which keeps the
+                definition in one place:
               </p>
               <CodeBlock
-                filename="events.ts"
+                filename="models/user.ts"
                 language="typescript"
-                code={`const orm = new Stabilize(dbConfig);
-
-// Connection lifecycle
-orm.events.on("connection:open", (dbType) => {
-  console.log("Connected to:", dbType);
-});
-
-orm.events.on("connection:close", () => {
-  console.log("Connection closed");
-});
-
-// Transaction lifecycle
-orm.events.on("transaction:start", () => {
-  console.log("Transaction started");
-});
-
-orm.events.on("transaction:complete", () => {
-  console.log("Transaction committed");
-});
-
-orm.events.on("transaction:error", (error) => {
-  console.error("Transaction failed:", error);
-});
-
-// Migration lifecycle
-orm.events.on("migration:start", () => {
-  console.log("Migration started");
-});
-
-orm.events.on("migration:complete", () => {
-  console.log("Migration complete");
-});
-
-// Query and error events
-orm.events.on("query", (entry) => {
-  console.log(\`[\${entry.durationMs}ms] \${entry.query}\`);
-});
-
-orm.events.on("error", (error) => {
-  console.error("Database error:", error);
+                code={`const User = defineModel({
+  tableName: "users",
+  columns: { /* ... */ },
+  hooks: {
+    beforeCreate: async (entity) => {
+      entity.password = await hashPassword(entity.password);
+    },
+  },
 });`}
               />
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">Event Types</h2>
+              <h2 className="text-2xl font-semibold mb-4">
+                Hooks as Class Methods
+              </h2>
               <p className="text-muted-foreground mb-4">
-                The full list of available events:
+                A third form: if the entity has a method whose name matches the
+                hook, it is called. This is resolved on the instance, so it works
+                only where the ORM holds a real entity — a hook declared this way
+                on a row that arrived as a plain object will not be found.
               </p>
-              <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                <li>
-                  <code>query</code> - Fired after each query with duration info
-                </li>
-                <li>
-                  <code>error</code> - Fired on database errors
-                </li>
-                <li>
-                  <code>migration:start</code> - Fired when migrations begin
-                </li>
-                <li>
-                  <code>migration:complete</code> - Fired when migrations finish
-                </li>
-                <li>
-                  <code>transaction:start</code> - Fired when a transaction
-                  begins
-                </li>
-                <li>
-                  <code>transaction:complete</code> - Fired when a transaction
-                  commits
-                </li>
-                <li>
-                  <code>transaction:error</code> - Fired when a transaction
-                  rolls back
-                </li>
-                <li>
-                  <code>connection:open</code> - Fired when a connection opens
-                </li>
-                <li>
-                  <code>connection:close</code> - Fired when a connection closes
-                </li>
-              </ul>
+              <CodeBlock
+                filename="models/user.ts"
+                language="typescript"
+                code={`class UserEntity {
+  id!: string;
+  email!: string;
+
+  async beforeCreate() {
+    this.email = this.email.toLowerCase();
+  }
+}`}
+              />
+              <p className="text-muted-foreground mt-4">
+                When more than one form is used,{" "}
+                <code>defineModel</code> / <code>registerHooks</code> callbacks
+                run first and class methods run second. Within a form, callbacks
+                run in the order given.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">
+                Which Operations Fire Which Hook
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-accent/30">
+                      <th className="text-left py-2 pr-4 font-semibold">
+                        Method
+                      </th>
+                      <th className="text-left py-2 pr-4 font-semibold">
+                        Hooks
+                      </th>
+                      <th className="text-left py-2 font-semibold">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-muted-foreground">
+                    <tr className="border-b border-accent/10">
+                      <td className="py-2 pr-4">
+                        <code>create()</code>
+                      </td>
+                      <td className="py-2 pr-4">
+                        beforeCreate, beforeSave, afterCreate, afterSave
+                      </td>
+                      <td className="py-2">
+                        <code>after*</code> sees the row with its generated id
+                      </td>
+                    </tr>
+                    <tr className="border-b border-accent/10">
+                      <td className="py-2 pr-4">
+                        <code>update()</code>
+                      </td>
+                      <td className="py-2 pr-4">
+                        beforeUpdate, beforeSave, afterUpdate, afterSave
+                      </td>
+                      <td className="py-2">per call</td>
+                    </tr>
+                    <tr className="border-b border-accent/10">
+                      <td className="py-2 pr-4">
+                        <code>delete()</code>
+                      </td>
+                      <td className="py-2 pr-4">beforeDelete, afterDelete</td>
+                      <td className="py-2">
+                        Both fire on a <em>soft</em> delete too — the row is
+                        marked, not removed
+                      </td>
+                    </tr>
+                    <tr className="border-b border-accent/10">
+                      <td className="py-2 pr-4">
+                        <code>bulkCreate()</code>
+                      </td>
+                      <td className="py-2 pr-4">beforeCreate, beforeSave</td>
+                      <td className="py-2">
+                        All rows, then one insert — entirely inside a single
+                        transaction
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 pr-4">
+                        <code>bulkUpdate()</code>
+                      </td>
+                      <td className="py-2 pr-4">afterUpdate, afterSave</td>
+                      <td className="py-2">
+                        Runs per matched row; no <code>before*</code> hook
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-muted-foreground mt-4">
+                Note the asymmetry in <code>bulkCreate()</code>: the{" "}
+                <em>before</em> hooks run for every row up front, but the insert is
+                a single batched statement — so a hook that mutates the entity in
+                place is reflected in the insert, while one that observes the
+                database sees nothing yet.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">
+                Events Are a Separate Mechanism
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                Hooks are per model and per row. The{" "}
+                <code>orm.events</code> emitter is ORM-wide and concerns the
+                connection, not your data — the two are unrelated, and an event
+                handler cannot observe a row change. See{" "}
+                <a href="/docs/events" className="text-accent underline">
+                  Events
+                </a>{" "}
+                for the emitter and exactly which events fire today.
+              </p>
             </section>
           </div>
-        </div>
-      </div>
     </div>
   );
 }

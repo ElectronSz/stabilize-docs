@@ -1,60 +1,80 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Database, Shield, Zap } from "lucide-react";
+import {
+  MySQLMark,
+  PostgreSQLMark,
+  SQLiteMark,
+  SqlServerMark,
+} from "@/components/brand-icons";
+
+/* The four engines are deliberately NOT hue-coded — a coloured badge per
+   database is exactly the "AI tag" look we removed. They share one
+   outline treatment instead, and the identity is carried by the label
+   and the icon above it. */
+const BADGE = "border-border bg-transparent text-foreground";
 
 const databases = [
   {
     name: "PostgreSQL",
-    icon: Database,
+    icon: PostgreSQLMark,
     description:
       "Full support for advanced features, JSONB, and connection pooling.",
-    color: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    color: BADGE,
   },
   {
     name: "MySQL",
-    icon: Shield,
+    icon: MySQLMark,
     description:
       "Complete MySQL compatibility with connection pool management.",
-    color: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+    color: BADGE,
   },
   {
     name: "SQLite",
-    icon: Zap,
+    icon: SQLiteMark,
     description:
       "Lightweight embedded database perfect for development and testing.",
-    color: "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+    color: BADGE,
+  },
+  {
+    name: "SQL Server",
+    icon: SqlServerMark,
+    description:
+      "Microsoft SQL Server, with MERGE-based upserts and IDENTITY keys.",
+    color: BADGE,
   },
 ];
 
 export function DatabaseSupport() {
   return (
-    <section className="relative py-20 sm:py-24 md:py-28">
-      <div className="max-w-4xl mx-auto px-6">
+    <section className="relative section">
+      <div className="container">
         <div className="text-center mb-14">
-          <p className="text-sm font-semibold text-accent uppercase tracking-widest mb-3">
+          <p className="text-small font-semibold text-accent uppercase tracking-widest mb-3">
             Databases
           </p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
-            One API, three databases
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Switch between PostgreSQL, MySQL, and SQLite by changing a single
-            config line. Your code stays the same.
+          <h2 className="text-h2 mb-4">One API, four databases</h2>
+          <p className="text-body-lg text-muted-foreground max-w-2xl mx-auto">
+            Switch between PostgreSQL, MySQL, SQLite, and SQL Server by changing
+            a single config line. Your code stays the same.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {databases.map((db) => (
             <Card
               key={db.name}
-              className="border-border/50 bg-card/50 backdrop-blur-sm hover:border-accent/30 transition-all duration-300 group"
+              className="border-border/60 bg-card/50 backdrop-blur-sm hover:border-accent/40 hover:bg-accent-subtle/40 transition-colors duration-300 group"
             >
               <CardContent className="p-6 flex flex-col items-start">
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent/10 group-hover:bg-accent/20 transition-colors shrink-0">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-accent-subtle group-hover:bg-accent/15 transition-colors shrink-0">
+                  {/* Real product mark, filled with currentColor so it
+                      stays neutral ink in both themes. */}
                   <db.icon className="h-6 w-6 text-accent" />
                 </div>
-                <Badge className={`mb-2 ${db.color}`}>{db.name}</Badge>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <Badge variant="outline" className={`mb-2 ${db.color}`}>
+                  {db.name}
+                </Badge>
+                <p className="text-small text-muted-foreground leading-relaxed">
                   {db.description}
                 </p>
               </CardContent>

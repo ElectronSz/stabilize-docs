@@ -2,8 +2,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function VersioningPage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">
           Versioning & Time Travel
         </h1>
@@ -147,7 +146,6 @@ console.log("Data restored from version 2");`}
             </ul>
           </section>
         </div>
-      </div>
     </div>
   );
 }

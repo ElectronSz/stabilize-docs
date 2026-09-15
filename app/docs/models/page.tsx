@@ -4,8 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function ModelsPage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl font-bold mb-4">Models</h1>
         <p className="text-lg text-muted-foreground mb-8">
           Define your data models with type-safe schemas
@@ -158,6 +157,24 @@ DataTypes.BLOB        // BLOB - binary data`}
 });`}
               language="typescript"
             />
+            <div className="rounded-xl border border-accent/30 bg-secondary/30 p-5 mt-4">
+              <p className="text-sm text-muted-foreground">
+                <strong>Who assigns the id?</strong> A{" "}
+                <code>DataTypes.STRING</code> or <code>DataTypes.UUID</code>{" "}
+                <code>id</code> is supplied by the caller, so it is required —{" "}
+                <code>create({`{ title: "x" }`})</code> fails with{" "}
+                <code>Field id is required</code>. Use{" "}
+                <code>DataTypes.INTEGER</code> instead and the database
+                generates it, so you omit it from the payload. The type alone
+                decides which, and it also changes the emitted column — a{" "}
+                <code>STRING</code> id becomes <code>UUID</code> on Postgres but
+                a text key elsewhere. See{" "}
+                <a className="underline" href="/docs/data-types">
+                  Data Types
+                </a>
+                .
+              </p>
+            </div>
           </section>
 
           <section>
@@ -306,7 +323,6 @@ const Post = defineModel({
             />
           </section>
         </div>
-      </div>
     </div>
   );
 }

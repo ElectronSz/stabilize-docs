@@ -4,8 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function RelationshipsPage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl font-bold mb-4">Relationships</h1>
         <p className="text-lg text-muted-foreground mb-8">
           Define and query relationships between your models
@@ -284,7 +283,6 @@ const userPostCounts = await userRepo
             />
           </section>
         </div>
-      </div>
     </div>
   );
 }

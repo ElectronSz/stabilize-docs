@@ -100,6 +100,113 @@ await repo.rollback(user.id, 2);`,
     lang: "typescript",
   },
   {
+    title: "Migrations",
+    code: `import { orm } from "./db";
+import { User, Post } from "./models";
+
+// Create or update tables until they match the models.
+// Safe to run on every boot — existing tables are left alone.
+await orm.autoMigrate([User, Post]);
+
+// Or drive schema changes explicitly, with a way back:
+import type { Migration } from "stabilize-orm";
+
+const addSlug: Migration = {
+  name: "2026_09_14_add_slug_to_posts",
+  up: [
+    "ALTER TABLE posts ADD COLUMN slug VARCHAR(255)",
+    "CREATE UNIQUE INDEX posts_slug_idx ON posts (slug)",
+  ],
+  down: ["DROP INDEX posts_slug_idx", "ALTER TABLE posts DROP COLUMN slug"],
+};
+
+await orm.migrate(dbConfig, [addSlug]);`,
+    lang: "typescript",
+  },
+  {
+    title: "Relations",
+    code: `const Book = defineModel({
+  tableName: "books",
+  columns: {
+    id: { type: DataTypes.INTEGER, required: true },
+    title: { type: DataTypes.STRING, required: true },
+    authorId: { type: DataTypes.INTEGER, name: "author_id" },
+  },
+  relations: [
+    {
+      type: RelationType.ManyToOne,
+      target: () => Author,
+      property: "author",
+      foreignKey: "authorId",
+    },
+    {
+      type: RelationType.ManyToMany,
+      target: () => Tag,
+      property: "tags",
+      joinTable: "book_tags",
+      foreignKey: "book_id",
+      inverseKey: "tag_id",
+    },
+  ],
+});
+
+// Ask for the relations you need — they load in one go
+const book = await bookRepo.findOne(id, {
+  relations: ["author", "tags"],
+});
+
+book.author.name;
+book.tags.map((t) => t.label);`,
+    lang: "typescript",
+  },
+  {
+    title: "Pagination",
+    code: `// Offset pagination, with the total for building page controls
+const page = await userRepo.paginate(2, 20);
+
+page.data;      // the 20 rows on page 2
+page.total;     // rows matching the query overall
+page.page;      // 2
+page.pageSize;  // 20
+
+// Cursor pagination for large or fast-changing result sets —
+// no drifting rows when something is inserted mid-scroll
+const next = await userRepo.findMany({
+  where: { isActive: true },
+  cursor: { field: "id", value: lastSeenId, direction: "forward" },
+  take: 20,
+  orderBy: { field: "id", direction: "ASC" },
+});`,
+    lang: "typescript",
+  },
+  {
+    title: "Soft Deletes",
+    code: `const User = defineModel({
+  tableName: "users",
+  columns: {
+    id: { type: DataTypes.STRING, required: true },
+    email: { type: DataTypes.STRING, length: 255 },
+    deletedAt: { type: DataTypes.DATETIME, softDelete: true },
+  },
+});
+
+const userRepo = orm.getRepository(User);
+
+// Marks the row deleted rather than removing it
+await userRepo.delete(user.id);
+
+// It is now invisible to reads and aggregates
+await userRepo.find().execute(orm.client); // omits it
+await userRepo.count();                    // omits it
+
+// And can be brought back
+await userRepo.recover(user.id);
+
+// ...or all at once
+await userRepo.recoverAll();`,
+    lang: "typescript",
+  },
+  {
     title: "CLI",
     code: `# Generate a model with columns
 bunx stabilize-cli generate:model Product name:string price:decimal stock:int
@@ -126,31 +233,35 @@ export function CodeExample() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <section className="relative py-20 sm:py-24 md:py-28">
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/30 to-background pointer-events-none" />
-      <div className="relative max-w-4xl mx-auto px-6">
+    <section className="relative section">
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary/40 to-background pointer-events-none" />
+      <div className="relative container">
         <div className="text-center mb-12">
-          <p className="text-sm font-semibold text-accent uppercase tracking-widest mb-3">
+          <p className="text-small font-semibold text-accent uppercase tracking-widest mb-3">
             Code
           </p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
-            Clean, intuitive, powerful
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+          <h2 className="text-h2 mb-4">Clean, intuitive, powerful</h2>
+          <p className="text-body-lg text-muted-foreground max-w-xl mx-auto">
             Write database operations with expressive, type-safe code.
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-5 justify-center">
+        <div
+          className="flex flex-wrap gap-2 mb-5 justify-center"
+          role="tablist"
+          aria-label="Code examples"
+        >
           {examples.map((example, index) => (
             <Button
               key={example.title}
               variant={activeTab === index ? "default" : "ghost"}
+              role="tab"
+              aria-selected={activeTab === index}
               onClick={() => setActiveTab(index)}
               className={
                 activeTab === index
-                  ? "bg-accent hover:bg-accent/90 text-accent-foreground rounded-lg"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/10 rounded-lg"
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg"
+                  : "text-muted-foreground hover:text-accent-subtle-foreground hover:bg-accent-subtle rounded-lg"
               }
               size="sm"
             >
@@ -159,14 +270,16 @@ export function CodeExample() {
           ))}
         </div>
 
-        <CodeBlock
-          code={examples[activeTab].code}
-          language={examples[activeTab].lang}
-          filename={
-            examples[activeTab].title.toLowerCase() +
-            (examples[activeTab].lang === "bash" ? "" : ".ts")
-          }
-        />
+        <div className="max-w-4xl mx-auto">
+          <CodeBlock
+            code={examples[activeTab].code}
+            language={examples[activeTab].lang}
+            filename={
+              examples[activeTab].title.toLowerCase() +
+              (examples[activeTab].lang === "bash" ? "" : ".ts")
+            }
+          />
+        </div>
       </div>
     </section>
   );

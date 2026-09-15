@@ -1,77 +1,82 @@
 import Link from "next/link";
-import { Github, Twitter, Zap } from "lucide-react";
+import { GitHubMark, XMark } from "@/components/brand-icons";
+
+const columns = [
+  {
+    heading: "Documentation",
+    links: [
+      { href: "/docs/quick-start", label: "Quick Start" },
+      { href: "/docs/models", label: "Models" },
+      { href: "/docs/query-builder", label: "Query Builder" },
+      { href: "/docs/cli", label: "CLI" },
+    ],
+  },
+  {
+    heading: "Resources",
+    links: [
+      { href: "/guides", label: "Guides" },
+      { href: "/api", label: "API Reference" },
+      { href: "/examples", label: "Examples" },
+      { href: "/docs/versioning", label: "Versioning" },
+    ],
+  },
+];
+
+const linkClass =
+  "text-small text-muted-foreground hover:text-accent-subtle-foreground transition-colors";
 
 export function Footer() {
   return (
-    <footer className="w-full border-t border-border/50 bg-card/30 backdrop-blur-sm">
-      <div className="max-w-5xl mx-auto px-6 py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+    <footer className="w-full border-t border-border/60 bg-card/30 backdrop-blur-sm">
+      <div className="container section-tight">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12 max-w-5xl mx-auto">
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-accent text-accent-foreground font-bold text-sm">
-                <Zap className="h-4 w-4" />
-              </div>
-              <span className="font-bold text-lg">Stabilize</span>
+            {/* Same wordmark as the header: "Stabilize" in ink, "ORM"
+                muted beside it on a shared baseline. There is no logo
+                image anywhere on the site — keep it that way. */}
+            <Link
+              href="/"
+              className="flex items-baseline gap-1.5 mb-4 group w-fit"
+            >
+              <span className="text-body font-semibold tracking-tight text-foreground group-hover:opacity-80 transition-opacity">
+                Stabilize
+              </span>
+              <span className="text-body font-normal tracking-tight text-muted-foreground group-hover:opacity-80 transition-opacity">
+                ORM
+              </span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-small text-muted-foreground leading-relaxed">
               A modern, type-safe ORM for Bun with unified PostgreSQL, MySQL,
-              and SQLite support.
+              SQLite, and SQL Server support.
             </p>
           </div>
 
-          <div>
-            <h4 className="font-semibold text-sm mb-3">Documentation</h4>
-            <ul className="space-y-2">
-              {[
-                { href: "/docs/quick-start", label: "Quick Start" },
-                { href: "/docs/models", label: "Models" },
-                { href: "/docs/query-builder", label: "Query Builder" },
-                { href: "/docs/cli", label: "CLI" },
-              ].map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {columns.map((column) => (
+            <div key={column.heading}>
+              <h4 className="text-small font-semibold mb-3">{column.heading}</h4>
+              <ul className="space-y-2 list-none p-0 m-0">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className={linkClass}>
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
           <div>
-            <h4 className="font-semibold text-sm mb-3">Resources</h4>
-            <ul className="space-y-2">
-              {[
-                { href: "/guides", label: "Guides" },
-                { href: "/api", label: "API Reference" },
-                { href: "/examples", label: "Examples" },
-                { href: "/docs/versioning", label: "Versioning" },
-              ].map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-semibold text-sm mb-3">Community</h4>
-            <ul className="space-y-2">
+            <h4 className="text-small font-semibold mb-3">Community</h4>
+            <ul className="space-y-2 list-none p-0 m-0">
               <li>
                 <a
                   href="https://github.com/ElectronSz/stabilize-orm"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                  className={`${linkClass} flex items-center gap-2`}
                 >
-                  <Github className="h-4 w-4" /> GitHub
+                  <GitHubMark className="h-4 w-4" /> GitHub
                 </a>
               </li>
               <li>
@@ -79,9 +84,9 @@ export function Footer() {
                   href="https://twitter.com/th3b0tk1ll3r"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2"
+                  className={`${linkClass} flex items-center gap-2`}
                 >
-                  <Twitter className="h-4 w-4" /> Twitter
+                  <XMark className="h-4 w-4" /> X
                 </a>
               </li>
             </ul>
@@ -89,19 +94,19 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-border/50">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <p className="text-xs text-muted-foreground">
+      <div className="border-t border-border/60">
+        <div className="container py-4 flex flex-col sm:flex-row items-center justify-between gap-2 max-w-5xl">
+          <p className="text-micro text-muted-foreground">
             &copy; {new Date().getFullYear()} Stabilize ORM. Built by{" "}
             <a
               href="https://github.com/ElectronSz"
-              className="underline hover:text-foreground"
+              className="underline hover:text-accent-subtle-foreground"
             >
               ElectronSz
             </a>
             .
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-micro text-muted-foreground">
             Made with care in Eswatini
           </p>
         </div>

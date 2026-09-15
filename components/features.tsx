@@ -93,41 +93,37 @@ const groups = [
 
 export function Features() {
   return (
-    <section className="relative py-20 sm:py-24 md:py-28">
-      <div className="max-w-5xl mx-auto px-6">
+    <section className="relative section">
+      <div className="container">
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-accent uppercase tracking-widest mb-3">
+          <p className="text-small font-semibold text-accent uppercase tracking-widest mb-3">
             Features
           </p>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4">
-            Everything you need
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+          <h2 className="text-h2 mb-4">Everything you need</h2>
+          <p className="text-body-lg text-muted-foreground max-w-xl mx-auto">
             A complete toolkit for building production apps with type-safe
             database access.
           </p>
         </div>
 
-        <div className="space-y-12">
+        <div className="space-y-12 max-w-5xl mx-auto">
           {groups.map((group) => (
             <div key={group.label}>
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/60 mb-5 pl-1">
+              <h3 className="text-micro font-semibold uppercase tracking-widest text-muted-foreground mb-5 pl-1">
                 {group.label}
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {group.items.map((item) => (
                   <div
                     key={item.title}
-                    className="group flex items-start gap-4 p-5 rounded-2xl border border-border/40 bg-card/40 hover:border-accent/40 hover:bg-accent/5 transition-all duration-300"
+                    className="group flex items-start gap-4 p-5 rounded-2xl border border-border/60 bg-card/40 hover:border-accent/40 hover:bg-accent-subtle/50 transition-colors duration-300"
                   >
-                    <div className="shrink-0 flex h-11 w-11 items-center justify-center rounded-xl bg-accent/10 group-hover:bg-accent/20 transition-colors">
+                    <div className="shrink-0 flex h-11 w-11 items-center justify-center rounded-xl bg-accent-subtle group-hover:bg-accent/15 transition-colors">
                       <item.icon className="h-5 w-5 text-accent" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-[15px] mb-1">
-                        {item.title}
-                      </h4>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
+                      <h4 className="text-h4 mb-1">{item.title}</h4>
+                      <p className="text-small text-muted-foreground leading-relaxed">
                         {item.desc}
                       </p>
                     </div>

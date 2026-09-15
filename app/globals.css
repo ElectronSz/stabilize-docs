@@ -1,72 +1,264 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* ─────────────────────────────────────────────────────────────
+   Stabilize ORM design system
+   Brand: monochrome. Every UI token is pure black / white / grey —
+   chroma 0 — so the chrome never competes with content. The single
+   exception is the syntax palette below: code is the one deliberately
+   coloured surface on the page, and its chroma is dialled well down so
+   it reads as a whisper of colour rather than a highlight.
+   Every value is oklch; shadcn token names are preserved so
+   downstream components keep working unchanged.
+   ───────────────────────────────────────────────────────────── */
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(0.98 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(0.985 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  color-scheme: light;
+
+  /* ── Surfaces ─────────────────────────────────────────── */
+  --background: oklch(0.994 0 0);
+  --foreground: oklch(0.22 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.22 0 0);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.22 0 0);
+
+  /* ── Brand ────────────────────────────────────────────── */
+  /* primary == accent == near-black. `accent` is used across the site
+     as the brand ink (text-accent, bg-accent/10), so it must stay
+     *strong* — it is not a hover surface here. Hover surfaces use the
+     --accent-subtle pair below, which survives the loss of hue intact. */
   --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.96 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.488 0.243 264.376);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.488 0.243 264.376);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.205 0 0);
+  --accent-foreground: oklch(0.99 0 0);
+
+  /* Grey surface + grey ink for hover / focus / selected states. */
+  --accent-subtle: oklch(0.958 0 0);
+  --accent-subtle-foreground: oklch(0.28 0 0);
+
+  /* ── Neutrals ─────────────────────────────────────────── */
+  --secondary: oklch(0.966 0 0);
+  --secondary-foreground: oklch(0.28 0 0);
+  --muted: oklch(0.966 0 0);
+  --muted-foreground: oklch(0.47 0 0); /* ≥4.5:1 on --background — AA body */
+  --border: oklch(0.916 0 0);
+  --input: oklch(0.916 0 0);
+
+  /* ── Status ───────────────────────────────────────────── */
+  /* Destructive keeps a restrained red — deleting a row genuinely needs
+     to read as danger. success/warning/info are neutral and separated
+     by *weight* instead of hue, so a status chip reads as emphasis
+     rather than as a coloured badge. */
+  --destructive: oklch(0.50 0.19 27);
+  --destructive-foreground: oklch(0.99 0.005 27);
+  --success: oklch(0.22 0 0);
+  --warning: oklch(0.34 0 0);
+  --info: oklch(0.44 0 0);
+
+  /* ── Focus ────────────────────────────────────────────── */
+  --ring: oklch(0.35 0 0);
+
+  /* ── Charts (a neutral weight ramp) ───────────────────── */
+  --chart-1: oklch(0.25 0 0);
+  --chart-2: oklch(0.40 0 0);
+  --chart-3: oklch(0.55 0 0);
+  --chart-4: oklch(0.70 0 0);
+  --chart-5: oklch(0.83 0 0);
+
+  /* ── Sidebar ──────────────────────────────────────────── */
+  --sidebar: oklch(0.978 0 0);
+  --sidebar-foreground: oklch(0.28 0 0);
   --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.958 0 0);
+  --sidebar-accent-foreground: oklch(0.28 0 0);
+  --sidebar-border: oklch(0.916 0 0);
+  --sidebar-ring: oklch(0.35 0 0);
+
+  --radius: 0.625rem;
+
+  /* ── Code surfaces (pure chrome — no hue) ─────────────── */
+  --code-bg: oklch(0.988 0 0);
+  --code-header: oklch(0.962 0 0);
+  --code-border: oklch(0.90 0 0);
+  --code-fg: oklch(0.30 0 0);
+  --code-muted: oklch(0.52 0 0);
+
+  /* Syntax palette — the ONE place colour is allowed to survive.
+     These are the site's original values, restored verbatim. The
+     monochrome rebrand deliberately stops at the edge of the code
+     block: chrome is grey, but code keeps a real palette so keyword,
+     string and number read apart at a glance. An intermediate pass
+     halved the chroma here and the code went grey — do not do that
+     again; a grey code block is the thing being fixed. */
+  --code-syntax-plain: #3d3428;
+  --code-syntax-comment: #9e9590;
+  --code-syntax-punctuation: #8a7e72;
+  --code-syntax-number: #c45d2e;
+  --code-syntax-string: #4a7c30;
+  --code-syntax-keyword: #8a5e20;
+  --code-syntax-function: #7a5e1a;
+  --code-syntax-operator: #a07030;
+  --code-syntax-regex: #9a6040;
+  --code-syntax-deleted: #c44040;
+  --code-syntax-inserted: #4a7c30;
+
+  /* ── Terminal (always dark, both modes) ───────────────── */
+  /* The familiar editor greys, and the original warm-cream ink. */
+  --term-bg: #1e1e1e;
+  --term-header: #2d2d2d;
+  --term-border: oklch(0.30 0 0);
+  --term-fg: #e8dcc8;
+  --term-muted: #8a7e72;
+  --term-prompt: #a8c686;
+  --term-comment: #6b6560;
+
+  /* macOS window controls — the one piece of chrome colour that is
+     load-bearing: it is what makes a code block read as "Apple window"
+     at a glance. These three are red / amber / green in both themes.
+
+     Alpha is baked into the token (~82%) rather than applied by the
+     component: at full strength the triplet is a bright, saturated spot
+     that pulls the eye off the code. The translucency lets the header
+     tint through, which is how the real controls sit on a window bar. */
+  --traffic-red: #ff5f57d1;
+  --traffic-amber: #febc2ed1;
+  --traffic-green: #28c840d1;
+
+  /* ── Layout ───────────────────────────────────────────── */
+  --container-content: 80rem;
+  --container-wide: 90rem;
+  --container-prose: 48rem;
+  --measure: 68ch;
 }
 
 .dark {
-  --background: oklch(0.05 0.01 264);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.08 0.015 264);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.08 0.015 264);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.65 0.22 264);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.12 0.02 264);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.12 0.02 264);
-  --muted-foreground: oklch(0.65 0.05 264);
-  --accent: oklch(0.55 0.25 280);
-  --accent-foreground: oklch(0.98 0 0);
-  --destructive: oklch(0.55 0.22 25);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.15 0.02 264);
-  --input: oklch(0.15 0.02 264);
-  --ring: oklch(0.55 0.25 280);
-  --sidebar: oklch(0.08 0.015 264);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.55 0.25 280);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.12 0.02 264);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.15 0.02 264);
-  --sidebar-ring: oklch(0.439 0 0);
+  color-scheme: dark;
+
+  --background: oklch(0.16 0 0);
+  --foreground: oklch(0.97 0 0);
+  --card: oklch(0.195 0 0);
+  --card-foreground: oklch(0.97 0 0);
+  --popover: oklch(0.195 0 0);
+  --popover-foreground: oklch(0.97 0 0);
+
+  /* Near-white brand on near-black ground. */
+  --primary: oklch(0.95 0 0);
+  --primary-foreground: oklch(0.17 0 0);
+  --accent: oklch(0.95 0 0);
+  --accent-foreground: oklch(0.17 0 0);
+
+  --accent-subtle: oklch(0.27 0 0);
+  --accent-subtle-foreground: oklch(0.93 0 0);
+
+  --secondary: oklch(0.24 0 0);
+  --secondary-foreground: oklch(0.95 0 0);
+  --muted: oklch(0.24 0 0);
+  --muted-foreground: oklch(0.72 0 0); /* 7.3:1 on --background — AA body */
+  --border: oklch(0.28 0 0);
+  --input: oklch(0.30 0 0);
+
+  --destructive: oklch(0.62 0.18 25);
+  --destructive-foreground: oklch(0.15 0.02 25);
+  /* Inverted weight ramp: on dark ground, lighter == stronger. */
+  --success: oklch(0.94 0 0);
+  --warning: oklch(0.82 0 0);
+  --info: oklch(0.72 0 0);
+
+  --ring: oklch(0.80 0 0);
+
+  --chart-1: oklch(0.94 0 0);
+  --chart-2: oklch(0.79 0 0);
+  --chart-3: oklch(0.64 0 0);
+  --chart-4: oklch(0.50 0 0);
+  --chart-5: oklch(0.38 0 0);
+
+  --sidebar: oklch(0.185 0 0);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(0.95 0 0);
+  --sidebar-primary-foreground: oklch(0.17 0 0);
+  --sidebar-accent: oklch(0.27 0 0);
+  --sidebar-accent-foreground: oklch(0.93 0 0);
+  --sidebar-border: oklch(0.28 0 0);
+  --sidebar-ring: oklch(0.80 0 0);
+
+  --code-bg: oklch(0.17 0 0);
+  --code-header: oklch(0.225 0 0);
+  --code-border: oklch(0.30 0 0);
+  --code-fg: oklch(0.93 0 0);
+  --code-muted: oklch(0.62 0 0);
+
+  /* Same palette as `:root`, retuned for dark ground — original values. */
+  --code-syntax-plain: #e8dcc8;
+  --code-syntax-comment: #6b6560;
+  --code-syntax-punctuation: #8a7e72;
+  --code-syntax-number: #e0916e;
+  --code-syntax-string: #a8c686;
+  --code-syntax-keyword: #d4a76a;
+  --code-syntax-function: #e8c88a;
+  --code-syntax-operator: #d4a76a;
+  --code-syntax-regex: #c9967e;
+  --code-syntax-deleted: #e06c75;
+  --code-syntax-inserted: #a8c686;
 }
 
 @theme inline {
-  --font-sans: "Inter", "system-ui", -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  /* next/font supplies these; `inline` defers the var() lookup to the
+     element, which is where the hashed family name actually lands. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, Menlo,
+    Consolas, monospace;
+
+  /* ── Type scale ───────────────────────────────────────────
+     Fluid: each step scales with the viewport between a mobile floor
+     and a desktop ceiling, so headings don't need a breakpoint ladder
+     on every page. */
+  --text-display: clamp(2.5rem, 1.6rem + 4.2vw, 3.75rem);
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 800;
+
+  --text-h1: clamp(2rem, 1.45rem + 2.5vw, 2.75rem);
+  --text-h1--line-height: 1.1;
+  --text-h1--letter-spacing: -0.025em;
+  --text-h1--font-weight: 800;
+
+  --text-h2: clamp(1.6rem, 1.35rem + 1.1vw, 2rem);
+  --text-h2--line-height: 1.18;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h2--font-weight: 700;
+
+  --text-h3: clamp(1.3rem, 1.2rem + 0.5vw, 1.5rem);
+  --text-h3--line-height: 1.3;
+  --text-h3--letter-spacing: -0.015em;
+  --text-h3--font-weight: 600;
+
+  --text-h4: 1.125rem;
+  --text-h4--line-height: 1.4;
+  --text-h4--letter-spacing: -0.01em;
+  --text-h4--font-weight: 600;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.7;
+
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.7;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.6;
+
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.5;
+  --text-micro--letter-spacing: 0.02em;
+
+  --text-mono: 0.8125rem;
+  --text-mono--line-height: 1.75;
+
+  /* ── Colours ──────────────────────────────────────────── */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -81,15 +273,35 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-subtle-foreground: var(--accent-subtle-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-code-bg: var(--code-bg);
+  --color-code-header: var(--code-header);
+  --color-code-border: var(--code-border);
+  --color-code-fg: var(--code-fg);
+  --color-code-muted: var(--code-muted);
+
+  /* Readable measure for long-form prose -> `max-w-measure`. */
+  --container-measure: var(--measure);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -100,17 +312,192 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Layout primitives
+   ───────────────────────────────────────────────────────────── */
+
+/* Replaces Tailwind's stock `container` (which sets only a width and
+   never centres itself). One shared wrapper: centred, capped, and
+   gutted consistently. Pages that already write `container` get this
+   for free. */
+@utility container {
+  width: 100%;
+  max-width: var(--container-content);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+}
+
+@utility container-wide {
+  width: 100%;
+  max-width: var(--container-wide);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+}
+
+/* Narrow wrapper for prose / long-form reading. */
+@utility container-prose {
+  width: 100%;
+  max-width: var(--container-prose);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2rem);
+}
+
+@utility section {
+  padding-block: clamp(3.5rem, 7vw, 6.5rem);
+}
+
+@utility section-tight {
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
+  /* Derive selection / scrollbar from the tokens so they stay in-system
+     (both are neutral now, so these are pure greys too). */
+  ::selection {
+    background-color: oklch(from var(--accent) l c h / 0.22);
+  }
+
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem; /* clears the sticky header on anchor jumps */
+  }
+
   body {
     @apply bg-background text-foreground;
+    font-size: var(--text-body);
+    line-height: 1.7;
+    text-rendering: optimizeLegibility;
   }
-  .container {
-    @apply px-4 sm:px-6 lg:px-8;
+
+  /* ── Element rhythm ───────────────────────────────────────
+     Pages that set their own text-* classes win (utilities beat base);
+     pages that don't now get a real type scale instead of browser
+     defaults. */
+  h1 {
+    @apply text-h1;
+    text-wrap: balance;
+  }
+  h2 {
+    @apply text-h2;
+    text-wrap: balance;
+  }
+  h3 {
+    @apply text-h3;
+  }
+  h4 {
+    @apply text-h4;
+  }
+
+  p {
+    @apply text-body;
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply scroll-mt-24;
+  }
+
+  /* Vertical rhythm for prose that isn't explicitly laid out. */
+  h2:not(:first-child),
+  h3:not(:first-child),
+  h4:not(:first-child) {
+    margin-top: 2em;
+  }
+  h2 + *,
+  h3 + *,
+  h4 + * {
+    margin-top: 0.75em;
+  }
+  p + p {
+    margin-top: 1.15em;
+  }
+
+  ul,
+  ol {
+    padding-inline-start: 1.5rem;
+    margin-block: 1em;
+  }
+  ul {
+    list-style: disc;
+  }
+  ol {
+    list-style: decimal;
+  }
+  li + li {
+    margin-top: 0.4em;
+  }
+
+  a {
+    @apply text-primary;
+    text-underline-offset: 3px;
+  }
+
+  small {
+    @apply text-small;
+  }
+
+  :not(pre) > code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    padding: 0.15em 0.4em;
+    border-radius: var(--radius-sm);
+    background-color: oklch(from var(--accent) l c h / 0.09);
+    color: oklch(from var(--accent) calc(l - 0.06) c h);
+    border: 1px solid oklch(from var(--accent) l c h / 0.14);
+  }
+
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  hr {
+    @apply border-border;
+    margin-block: 2.5rem;
+  }
+
+  /* ── Focus ────────────────────────────────────────────────
+     A visible keyboard focus ring everywhere. shadcn primitives set
+     `outline-none` and supply their own ring, which sits in the
+     utilities layer and therefore wins here — no double ring. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Buttons / links / inputs get a consistent interactive feel. */
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea,
+  summary {
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease,
+      border-color 0.15s ease,
+      box-shadow 0.15s ease,
+      opacity 0.15s ease;
+  }
+
+  ::placeholder {
+    color: var(--muted-foreground);
+    opacity: 1;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Components / decorative
+   ───────────────────────────────────────────────────────────── */
 
 /* ─── ANIMATIONS ──────────────────────────────────────── */
 
@@ -200,42 +587,49 @@
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
-/* ─── GRADIENTS ───────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-float,
+  .animate-glow,
+  .animate-shimmer,
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-pulse-soft {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ─── GRADIENTS (neutral) ─────────────────────────────── */
+
+/* Soft grey vignette for depth — no coloured glow. */
 .hero-gradient {
-  background:
-    radial-gradient(
-      ellipse at 50% 0%,
-      oklch(0.62 0.2 42 / 0.15) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 80% 50%,
-      oklch(0.55 0.18 45 / 0.08) 0%,
-      transparent 50%
-    );
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    oklch(0 0 0 / 0.05) 0%,
+    transparent 62%
+  );
 }
 
 .dark .hero-gradient {
-  background:
-    radial-gradient(
-      ellipse at 50% 0%,
-      oklch(0.68 0.22 42 / 0.2) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 80% 50%,
-      oklch(0.55 0.25 180 / 0.1) 0%,
-      transparent 50%
-    );
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    oklch(1 0 0 / 0.055) 0%,
+    transparent 62%
+  );
 }
 
+/* A graphite sweep instead of a brand-colour one: still gives the hero
+   h1 a bit of dimension, entirely without hue. */
 .gradient-text {
   background: linear-gradient(
     135deg,
-    oklch(0.55 0.2 42),
-    oklch(0.62 0.18 25),
-    oklch(0.5 0.15 60)
+    oklch(0.16 0 0),
+    oklch(0.30 0 0)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -245,9 +639,8 @@
 .dark .gradient-text {
   background: linear-gradient(
     135deg,
-    oklch(0.75 0.2 42),
-    oklch(0.8 0.18 25),
-    oklch(0.7 0.15 60)
+    oklch(0.99 0 0),
+    oklch(0.74 0 0)
   );
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -287,55 +680,11 @@
   z-index: 0;
 }
 
-/* ─── CODE BLOCK STYLES ───────────────────────────────── */
-
-.token-keyword {
-  color: oklch(0.6 0.22 30);
-}
-
-.token-string {
-  color: oklch(0.55 0.15 150);
-}
-
-.token-comment {
-  color: oklch(0.5 0.03 50);
-  font-style: italic;
-}
-
-.token-function {
-  color: oklch(0.6 0.18 60);
-}
-
-.token-number {
-  color: oklch(0.55 0.18 200);
-}
-
-.dark .token-keyword {
-  color: oklch(0.72 0.22 30);
-}
-
-.dark .token-string {
-  color: oklch(0.7 0.15 150);
-}
-
-.dark .token-comment {
-  color: oklch(0.55 0.03 50);
-  font-style: italic;
-}
-
-.dark .token-function {
-  color: oklch(0.72 0.18 60);
-}
-
-.dark .token-number {
-  color: oklch(0.68 0.18 200);
-}
-
 /* ─── SCROLLBAR ───────────────────────────────────────── */
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -343,10 +692,13 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: oklch(from var(--muted-foreground) l c h / 0.3);
-  border-radius: 3px;
+  background: oklch(from var(--muted-foreground) l c h / 0.35);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(from var(--muted-foreground) l c h / 0.5);
+  background: oklch(from var(--muted-foreground) l c h / 0.55);
+  background-clip: content-box;
 }

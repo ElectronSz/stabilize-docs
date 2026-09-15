@@ -4,8 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function HooksExamplePage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl font-bold mb-4">Hooks & Lifecycle Events</h1>
         <p className="text-lg text-muted-foreground mb-8">
           Use hooks and events to run custom logic at key points in the data
@@ -161,7 +160,6 @@ await userRepo.create({ id: "1", name: "Test" });
             />
           </section>
         </div>
-      </div>
     </div>
   );
 }

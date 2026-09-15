@@ -4,8 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function CachingExamplePage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl font-bold mb-4">Caching & Performance</h1>
         <p className="text-lg text-muted-foreground mb-8">
           Enable caching, choose strategies, and optimize query performance
@@ -120,7 +119,6 @@ console.log("Pool:", poolStats);`}
             />
           </section>
         </div>
-      </div>
     </div>
   );
 }

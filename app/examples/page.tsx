@@ -9,9 +9,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
   ArrowRight,
-  Code2,
   Database,
-  FileCode,
   GitBranch,
   Layers,
   Zap,

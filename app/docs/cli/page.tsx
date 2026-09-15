@@ -5,14 +5,13 @@ import {
   Database,
   GitBranch,
   FileCode2,
-  HardDrive,
   Search,
   Layers,
   Code2,
   Settings,
-  Beaker,
   Zap,
   ShieldAlert,
+  type LucideIcon,
 } from "lucide-react";
 
 function TerminalBlock({
@@ -110,7 +109,7 @@ function Section({
   label,
   children,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   children: React.ReactNode;
 }) {
@@ -127,8 +126,7 @@ function Section({
 
 export default function CLIPage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 mb-4">
             <Terminal className="h-3.5 w-3.5 text-accent" />
@@ -437,7 +435,7 @@ export default function CLIPage() {
             <div className="h-4" />
             <Prompt cmd="stabilize-cli generate:all User name:string email:string age:int --count 10" />
             <Out color="text-[#5b9bd5]">
-              ℹ Generating model, migration, and seed for 'user'...
+              ℹ Generating model, migration, and seed for &apos;user&apos;...
             </Out>
             <Out color="text-[#28c840]">✔ Model: models/user.ts</Out>
             <Out color="text-[#28c840]">
@@ -490,7 +488,6 @@ export default function CLIPage() {
             </Out>
           </TerminalBlock>
         </Section>
-      </div>
     </div>
   );
 }

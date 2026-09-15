@@ -6,6 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { CodeBlock } from "@/components/code-block";
 import Link from "next/link";
 import { ArrowRight, BookOpen, Code2, Terminal, Zap } from "lucide-react";
 
@@ -38,8 +39,7 @@ const sections = [
 
 export default function DocsPage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
             Documentation
@@ -88,28 +88,27 @@ export default function DocsPage() {
           <CardContent className="space-y-4">
             <div>
               <h3 className="font-semibold mb-2">1. Install Stabilize</h3>
-              <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4">
-                <code className="text-sm font-mono">bun add stabilize-orm</code>
-              </div>
+              <CodeBlock code="bun add stabilize-orm" language="bash" />
             </div>
             <div>
               <h3 className="font-semibold mb-2">2. Configure your database</h3>
-              <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4 overflow-x-auto">
-                <pre className="text-sm font-mono">
-                  {`import { DBType, type DBConfig } from "stabilize-orm";
+              <CodeBlock
+                language="typescript"
+                filename="config/database.ts"
+                code={`import { DBType, type DBConfig } from "stabilize-orm";
 
 const dbConfig: DBConfig = {
   type: DBType.SQLite,
   connectionString: "./data/app.db",
 };`}
-                </pre>
-              </div>
+              />
             </div>
             <div>
               <h3 className="font-semibold mb-2">3. Define your first model</h3>
-              <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4 overflow-x-auto">
-                <pre className="text-sm font-mono">
-                  {`import { defineModel, DataTypes } from "stabilize-orm";
+              <CodeBlock
+                language="typescript"
+                filename="models/User.ts"
+                code={`import { defineModel, DataTypes } from "stabilize-orm";
 
 const User = defineModel({
   tableName: "users",
@@ -118,12 +117,10 @@ const User = defineModel({
     email: { type: DataTypes.STRING, length: 255 },
   },
 });`}
-                </pre>
-              </div>
+              />
             </div>
           </CardContent>
         </Card>
-      </div>
     </div>
   );
 }

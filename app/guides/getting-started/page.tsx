@@ -6,8 +6,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function GettingStartedGuidePage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl font-bold mb-4">Getting Started Guide</h1>
         <p className="text-lg text-muted-foreground mb-8">
           A complete walkthrough from installation to your first query
@@ -154,7 +153,6 @@ await userRepo.delete(user.id);`}
             </ul>
           </Card>
         </div>
-      </div>
     </div>
   );
 }

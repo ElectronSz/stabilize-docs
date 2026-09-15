@@ -4,8 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function CrudExamplePage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl font-bold mb-4">Basic CRUD Operations</h1>
         <p className="text-lg text-muted-foreground mb-8">
           Learn how to create, read, update, and delete records
@@ -208,7 +207,6 @@ const emails = await userRepository.pluck("email");`}
             />
           </section>
         </div>
-      </div>
     </div>
   );
 }

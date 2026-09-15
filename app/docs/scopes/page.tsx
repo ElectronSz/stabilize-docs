@@ -4,9 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function ScopesPage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="flex justify-center">
-        <div className="w-full max-w-4xl mx-auto px-4 md:px-6">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
           <h1 className="text-4xl font-bold mb-4">Query Scopes</h1>
           <p className="text-lg text-muted-foreground mb-8">
             Reusable query filters for cleaner, more maintainable code
@@ -119,8 +117,6 @@ const allPosts = await postRepo
               />
             </section>
           </div>
-        </div>
-      </div>
     </div>
   );
 }

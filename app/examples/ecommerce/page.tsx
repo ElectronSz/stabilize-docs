@@ -4,8 +4,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function EcommerceExamplePage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl font-bold mb-4">E-Commerce Store</h1>
         <p className="text-lg text-muted-foreground mb-8">
           Build a complete e-commerce backend with products, categories,
@@ -221,7 +220,6 @@ console.log("Upserted:", bulkProducts.length, "products");`}
             />
           </section>
         </div>
-      </div>
     </div>
   );
 }

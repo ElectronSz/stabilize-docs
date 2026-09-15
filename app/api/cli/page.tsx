@@ -1,18 +1,13 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
-  Terminal,
   Database,
   GitBranch,
   FileCode2,
-  HardDrive,
   Search,
-  Layers,
   Code2,
-  Settings,
-  Beaker,
+  type LucideIcon,
 } from "lucide-react";
 
 function TBlock({
@@ -53,7 +48,7 @@ function Section({
   label,
   children,
 }: {
-  icon: any;
+  icon: LucideIcon;
   label: string;
   children: React.ReactNode;
 }) {
@@ -75,6 +70,11 @@ export default function CliApiPage() {
         <h1 className="text-4xl font-bold mb-2">CLI Commands</h1>
         <p className="text-lg text-muted-foreground mb-8">
           Stabilize CLI v2.2.0 — 31 commands with shorthand aliases
+        </p>
+        <p className="text-sm text-muted-foreground mb-8">
+          The CLI is versioned independently of the ORM: this is the version of
+          the <code>stabilize-cli</code> package, which is not the same number as
+          the <code>stabilize-orm</code> release it depends on.
         </p>
 
         <Section icon={FileCode2} label="Generate">
@@ -218,6 +218,31 @@ export default function CliApiPage() {
             </p>
             <TBlock>
               <P cmd="stabilize-cli migrate:pending" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              migrate:auto
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              GORM-style auto migrate: create tables, add missing columns and
+              indexes. Never deletes.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli migrate:auto" />
+            </TBlock>
+          </Card>
+          <Card className="border-border/50 bg-card/50 p-5">
+            <code className="text-sm font-mono font-semibold text-accent">
+              seed
+            </code>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Run all pending seed files. Applied seeds are tracked in a{" "}
+              <code>stabilize_seed_history</code> table, so a seed that already
+              ran is not run twice.
+            </p>
+            <TBlock>
+              <P cmd="stabilize-cli seed" />
             </TBlock>
           </Card>
         </Section>

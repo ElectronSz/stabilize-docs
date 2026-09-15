@@ -1,6 +1,24 @@
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { Code2, Database, FileCode, GitBranch, Layers, Terminal } from "lucide-react"
+import {
+  BarChart3,
+  Beaker,
+  BookOpen,
+  Code2,
+  Database,
+  FileCode,
+  FileCode2,
+  GitBranch,
+  HardDrive,
+  Layers,
+  Lock,
+  Settings,
+  Shield,
+  Sparkles,
+  Terminal,
+  Workflow,
+  Zap,
+} from "lucide-react"
 
 const apiSections = [
   {
@@ -28,10 +46,76 @@ const apiSections = [
     href: "/api/model",
   },
   {
-    icon: GitBranch,
+    icon: FileCode2,
     title: "Data Types",
     description: "Available data types for model columns",
     href: "/api/data-types",
+  },
+  {
+    icon: Shield,
+    title: "Validation",
+    description: "Column validation rules and how write paths enforce them",
+    href: "/api/validation",
+  },
+  {
+    icon: Workflow,
+    title: "Transactions",
+    description: "Atomic multi-statement writes and how the client is threaded through them",
+    href: "/api/transactions",
+  },
+  {
+    icon: HardDrive,
+    title: "Soft Deletes",
+    description: "Deleting without removing, recovering rows, and querying the trash",
+    href: "/api/soft-deletes",
+  },
+  {
+    icon: Lock,
+    title: "Optimistic Locking",
+    description: "Version-based conflict detection and the pessimistic alternative",
+    href: "/api/optimistic-locking",
+  },
+  {
+    icon: Zap,
+    title: "Retry & Pooling",
+    description: "Retry behaviour for read-only statements, pool statistics and health checks",
+    href: "/api/retry-and-pooling",
+  },
+  {
+    icon: Sparkles,
+    title: "Events & Hooks",
+    description: "Lifecycle hooks and the events a Stabilize instance emits",
+    href: "/api/events",
+  },
+  {
+    icon: Settings,
+    title: "Logging",
+    description: "Log levels, file rotation and what the logger writes",
+    href: "/api/logging",
+  },
+  {
+    icon: BookOpen,
+    title: "Pagination",
+    description: "Offset and cursor pagination across the repository and the query builder",
+    href: "/api/pagination",
+  },
+  {
+    icon: GitBranch,
+    title: "Many-to-Many",
+    description: "Link management across a join table",
+    href: "/api/many-to-many",
+  },
+  {
+    icon: BarChart3,
+    title: "Aggregates",
+    description: "Count, sum, average, min and max on the Repository and the QueryBuilder",
+    href: "/api/aggregates",
+  },
+  {
+    icon: Beaker,
+    title: "Helper Methods",
+    description: "Lookups, create-or-update, column helpers, bulk writes and iteration",
+    href: "/api/helpers",
   },
   {
     icon: Terminal,

@@ -2,9 +2,7 @@ import { CodeBlock } from "@/components/code-block";
 
 export default function MigrationsPage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="flex justify-center">
-        <div className="w-full max-w-4xl mx-auto px-4 md:px-6">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
           <h1 className="text-4xl font-bold mb-4">Migrations</h1>
           <p className="text-lg text-muted-foreground mb-8">
             Manage database schema changes with automatic migration generation
@@ -103,7 +101,8 @@ console.log("Down:", migration.down);
                 <li>Always review generated migrations before running</li>
                 <li>Test migrations on a copy of production data</li>
                 <li>
-                  Never modify existing migrations after they've been deployed
+                  Never modify existing migrations after they&apos;ve been
+                  deployed
                 </li>
                 <li>
                   Use <code>migrate:fresh</code> only in development
@@ -145,8 +144,6 @@ await orm.autoMigrate([User, Post, Comment]);`}
               </p>
             </section>
           </div>
-        </div>
-      </div>
     </div>
   );
 }

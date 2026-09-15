@@ -2,7 +2,22 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowRight, Sparkles, Zap } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import {
+  MySQLMark,
+  PostgreSQLMark,
+  SQLiteMark,
+  SqlServerMark,
+} from "@/components/brand-icons";
+
+/* Each chip carries the real product mark in neutral ink instead of an
+   anonymous bullet — same icons as database-support.tsx. */
+const databases = [
+  { name: "PostgreSQL", icon: PostgreSQLMark },
+  { name: "MySQL", icon: MySQLMark },
+  { name: "SQLite", icon: SQLiteMark },
+  { name: "SQL Server", icon: SqlServerMark },
+];
 
 export function Hero() {
   return (
@@ -10,29 +25,29 @@ export function Hero() {
       <div className="hero-gradient absolute inset-0 pointer-events-none" />
       <div className="grid-pattern absolute inset-0 pointer-events-none opacity-30" />
 
-      <div className="relative max-w-4xl mx-auto px-6 pt-24 pb-20 sm:pt-32 sm:pb-28 md:pt-40 md:pb-36">
-        <div className="flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-accent/10 border border-accent/20 mb-8 animate-fade-in">
-            <Sparkles className="h-3.5 w-3.5 text-accent" />
-            <span className="text-sm font-medium text-accent">v2.1.0</span>
-            <span className="text-muted-foreground/60">|</span>
-            <span className="text-sm text-muted-foreground">
-              Backup, restore & API generation
+      <div className="relative container pt-20 pb-16 sm:pt-28 sm:pb-24 md:pt-32 md:pb-28">
+        <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
+          {/* Release line — plain muted text, deliberately not a pill. */}
+          <p className="text-small text-muted-foreground mb-8 animate-fade-in">
+            <span className="font-medium">v2.1.0</span>
+            <span className="mx-2" aria-hidden="true">
+              |
             </span>
-          </div>
+            Backup, restore & API generation
+          </p>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 animate-slide-up leading-[1.1]">
+          <h1 className="text-display mb-6 animate-slide-up">
             Build faster with{" "}
             <span className="gradient-text">Stabilize ORM</span>
           </h1>
 
           <p
-            className="text-lg sm:text-xl text-muted-foreground max-w-2xl mb-10 animate-slide-up leading-relaxed"
+            className="text-body-lg text-muted-foreground max-w-2xl mb-10 animate-slide-up"
             style={{ animationDelay: "0.1s" }}
           >
             A modern, type-safe ORM for Bun with a unified API for PostgreSQL,
-            MySQL, and SQLite. Define models, run migrations, and query data
-            with a clean, fluent interface.
+            MySQL, SQLite, and SQL Server. Define models, run migrations, and
+            query data with a clean, fluent interface.
           </p>
 
           <div
@@ -42,18 +57,15 @@ export function Hero() {
             <Button
               asChild
               size="lg"
-              className="bg-accent hover:bg-accent/90 text-accent-foreground shadow-xl shadow-accent/25 text-base px-8 h-12 rounded-xl"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 text-body px-8 h-12 rounded-xl"
             >
-              <Link href="/docs/quick-start">
-                <Zap className="mr-2 h-4 w-4" />
-                Get Started
-              </Link>
+              <Link href="/docs/quick-start">Get Started</Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="border-border hover:bg-accent/5 text-base px-8 h-12 rounded-xl"
+              className="border-border hover:bg-accent-subtle hover:text-accent-subtle-foreground text-body px-8 h-12 rounded-xl"
             >
               <Link href="/examples">
                 View Examples
@@ -63,27 +75,16 @@ export function Hero() {
           </div>
 
           <div
-            className="mt-12 flex items-center gap-6 text-sm text-muted-foreground animate-fade-in"
+            className="mt-12 flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-small text-muted-foreground animate-fade-in"
             style={{ animationDelay: "0.3s" }}
           >
-            <div className="flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse-soft" />
-              <span>PostgreSQL</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div
-                className="h-2 w-2 rounded-full bg-orange-500 animate-pulse-soft"
-                style={{ animationDelay: "0.5s" }}
-              />
-              <span>MySQL</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div
-                className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse-soft"
-                style={{ animationDelay: "1s" }}
-              />
-              <span>SQLite</span>
-            </div>
+            {databases.map((db) => (
+              <div key={db.name} className="flex items-center gap-1.5">
+                {/* inherits currentColor from the muted parent */}
+                <db.icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{db.name}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

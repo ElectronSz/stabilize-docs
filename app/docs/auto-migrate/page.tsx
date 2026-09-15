@@ -2,8 +2,7 @@
 
 export default function AutoMigratePage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <h1 className="text-4xl font-bold mb-4">AutoMigrate</h1>
         <p className="text-lg text-muted-foreground mb-8">
           GORM-style automatic schema migration. Creates tables, adds missing
@@ -19,7 +18,7 @@ export default function AutoMigratePage() {
             </p>
             <ul className="list-disc list-inside text-muted-foreground space-y-2">
               <li>
-                <strong>Creates table</strong> if it doesn't exist
+                <strong>Creates table</strong> if it doesn&apos;t exist
               </li>
               <li>
                 <strong>Adds missing columns</strong> (never deletes or changes
@@ -97,7 +96,7 @@ export default function AutoMigratePage() {
                       from
                     </span>{" "}
                     <span className="text-[#4a7c30] dark:text-[#a8c686]">
-                      "stabilize-orm"
+                      &quot;stabilize-orm&quot;
                     </span>
                     ;
                   </div>
@@ -110,14 +109,14 @@ export default function AutoMigratePage() {
                       from
                     </span>{" "}
                     <span className="text-[#4a7c30] dark:text-[#a8c686]">
-                      "./models"
+                      &quot;./models&quot;
                     </span>
                     ;
                   </div>
                   <div className="h-4" />
                   <div>
                     <span className="text-[#9e9590] dark:text-[#6b6560] italic">
-                      // Single model
+                      {"// Single model"}
                     </span>
                   </div>
                   <div>
@@ -133,7 +132,7 @@ export default function AutoMigratePage() {
                   <div className="h-4" />
                   <div>
                     <span className="text-[#9e9590] dark:text-[#6b6560] italic">
-                      // Multiple models (like GORM)
+                      {"// Multiple models (like GORM)"}
                     </span>
                   </div>
                   <div>
@@ -191,7 +190,7 @@ export default function AutoMigratePage() {
             </h2>
             <div className="rounded-xl border border-border/40 bg-card/40 p-6 mb-4">
               <h3 className="font-semibold mb-3">
-                You don't need to disable migrations.
+                You don&apos;t need to disable migrations.
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
                 AutoMigrate and manual migrations can coexist. They serve
@@ -335,7 +334,6 @@ export default function AutoMigratePage() {
             </div>
           </section>
         </div>
-      </div>
     </div>
   );
 }

@@ -3,8 +3,7 @@ import { BookOpen } from "lucide-react";
 
 export default function MigrationsGuidePage() {
   return (
-    <div className="container py-12 md:py-16">
-      <div className="mx-auto max-w-4xl">
+    <div className="container mx-auto max-w-4xl py-12 md:py-16">
         <div className="flex items-center gap-3 mb-4">
           <BookOpen className="h-10 w-10 text-accent" />
           <h1 className="text-4xl md:text-5xl font-bold">
@@ -94,7 +93,6 @@ await runMigrations(
             </ul>
           </section>
         </div>
-      </div>
     </div>
   );
 }
