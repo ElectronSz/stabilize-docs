@@ -7,7 +7,8 @@ export default function CachingPage() {
     <div className="container mx-auto max-w-4xl py-12 md:py-16">
       <h1 className="text-4xl font-bold mb-4">Caching</h1>
       <p className="text-lg text-muted-foreground mb-8">
-        Redis-backed caching for improved query performance
+        Cache query results in Redis, or in process when there is no Redis to
+        run
       </p>
 
       <div className="space-y-8">
@@ -15,7 +16,8 @@ export default function CachingPage() {
           <h2 className="text-2xl font-semibold mb-4">Enable Caching</h2>
           <p className="text-muted-foreground mb-4">
             Pass a <code>CacheConfig</code> as the second argument to the{" "}
-            <code>Stabilize</code> constructor:
+            <code>Stabilize</code> constructor. With a <code>redisUrl</code> the
+            cache is shared between every instance of your application:
           </p>
           <CodeBlock
             filename="db.ts"
@@ -30,28 +32,33 @@ const orm = new Stabilize(
   {
     enabled: true,
     ttl: 60,                    // Cache TTL in seconds
-    redisUrl: process.env.REDIS_URL,  // Redis connection URL
+    redisUrl: process.env.REDIS_URL,  // Shared across instances
     cachePrefix: "myapp:",      // Prefix for all cache keys
     strategy: "cache-aside",    // or "write-through"
   }
 );`}
           />
-          <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5 mt-4">
-            <p className="text-sm font-semibold mb-2">
-              <code>redisUrl</code> is not optional in practice
-            </p>
-            <p className="text-sm text-muted-foreground">
-              The type marks <code>redisUrl</code> optional, but there is no
-              in-memory fallback. A <code>Cache</code> built with{" "}
-              <code>enabled: true</code> and no <code>redisUrl</code> holds no
-              Redis client at all, and every one of its methods becomes a silent
-              no-op: <code>get</code> returns <code>null</code>, <code>set</code>{" "}
-              discards the value, and <code>getStats</code> reports zeros
-              forever. You get no error and no caching — only the appearance of
-              it. Set <code>redisUrl</code> whenever <code>enabled</code> is{" "}
-              <code>true</code>.
-            </p>
-          </div>
+          <p className="text-muted-foreground mt-4">
+            Leave <code>redisUrl</code> out and the cache runs in process
+            instead, backed by{" "}
+            <a href="#the-in-process-backend" className="text-accent underline">
+              <code>StabilizeKV</code>
+            </a>
+            . <code>enabled: true</code> always produces a working cache either
+            way — there is no configuration that turns caching on and then
+            quietly does nothing:
+          </p>
+          <CodeBlock
+            filename="local.ts"
+            language="typescript"
+            code={`// No Redis to run. maxEntries bounds the store; the least recently
+// used entry is evicted when it is full.
+const orm = new Stabilize(dbConfig, {
+  enabled: true,
+  ttl: 60,
+  maxEntries: 5000,
+});`}
+          />
           <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5 mt-4">
             <p className="text-sm font-semibold mb-2">
               Passing <code>existingClient</code> turns caching off
@@ -62,10 +69,63 @@ const orm = new Stabilize(
               — the cache handle is forced to <code>null</code> and{" "}
               <code>cacheConfig</code> is ignored entirely, <code>enabled</code>{" "}
               included. <code>getCacheStats()</code> then answers{" "}
-              <code>{"{ hits: 0, misses: 0, keys: 0 }"}</code> however you
-              configured it, and reads go straight to the database. This is not
-              a bug you can work around with config: if you need caching, do not
-              pass <code>existingClient</code>.
+              <code>{`{ hits: 0, misses: 0, keys: 0, backend: "disabled" }`}</code>{" "}
+              however you configured it, and reads go straight to the database.
+              This is not a bug you can work around with config: if you need
+              caching, do not pass <code>existingClient</code>.
+            </p>
+          </div>
+        </section>
+
+        <section id="the-in-process-backend">
+          <h2 className="text-2xl font-semibold mb-4">The In-Process Backend</h2>
+          <p className="text-muted-foreground mb-4">
+            Without a <code>redisUrl</code> the cache is a{" "}
+            <code>StabilizeKV</code> — an in-process key-value store with{" "}
+            <code>get</code>/<code>put</code>/<code>delete</code>/
+            <code>list</code>, <code>expiration</code> and{" "}
+            <code>expirationTtl</code>, metadata and cursor pagination. Its API
+            follows Cloudflare Workers KV, so code written against Workers KV
+            works here unchanged. It is exported in its own right too, for an
+            application that wants a KV store with TTL and cursors without
+            running one:
+          </p>
+          <CodeBlock
+            filename="kv.ts"
+            language="typescript"
+            code={`import { StabilizeKV } from "stabilize-orm";
+
+const kv = new StabilizeKV({ maxEntries: 5000 });
+
+await kv.put("session:42", JSON.stringify(user), { expirationTtl: 3600 });
+const raw = await kv.get<string>("session:42", { type: "text" });
+
+const { keys } = await kv.list({ prefix: "session:", limit: 100 });`}
+          />
+          <p className="text-muted-foreground mb-4 mt-4">
+            Both backends implement one internal interface, every public{" "}
+            <code>Cache</code> method is written once against it, and the
+            in-process store holds the JSON text <code>Cache</code> produced
+            rather than live objects. So swapping backends cannot change what a{" "}
+            <code>get</code> returns, and a caller who mutates a returned object
+            cannot reach into the cache and corrupt it.
+          </p>
+          <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5">
+            <p className="text-sm font-semibold mb-2">
+              What it is not: shared, durable, or replicated
+            </p>
+            <p className="text-sm text-muted-foreground">
+              The in-process store is private to one process. Two application
+              servers caching the same key each hold their own copy, and
+              invalidating on one leaves the other serving stale rows. Nothing is
+              written to disk, so the cache dies with the process — a restart
+              starts cold, which is correct for a cache and wrong for anything
+              you were treating as storage. And there is no eviction policy
+              beyond the LRU bound you set: when{" "}
+              <code>maxEntries</code> is reached, the least recently used entry
+              goes. That is the right trade for a single-server app, a test suite
+              and local development, and the wrong one for a fleet. Pass{" "}
+              <code>redisUrl</code> when the cache has to be shared.
             </p>
           </div>
         </section>
@@ -103,9 +163,9 @@ const orm = new Stabilize(
               Only <code>findOne()</code> reads from the cache
             </p>
             <p className="text-sm text-muted-foreground">
-              <code>findOne()</code> is the single read path that consults Redis.
-              A builder from <code>find()</code> — and everything built on it,{" "}
-              <code>findBy</code>, <code>first</code>, <code>paginate</code>,{" "}
+              <code>findOne()</code> is the single read path that consults the
+              cache. A builder from <code>find()</code> — and everything built on
+              it, <code>findBy</code>, <code>first</code>, <code>paginate</code>,{" "}
               <code>findAndCountAll</code>, a raw <code>QueryBuilder</code> —
               executes against the database every time, cache enabled or not.
               Caching the list queries would mean invalidating every filtered
@@ -209,11 +269,12 @@ find:<table>:*                            # invalidated, but never read`}
             </li>
           </ul>
           <p className="text-muted-foreground mt-4">
-            Pattern invalidation runs through Redis <code>KEYS</code>, which
-            scans the whole keyspace. A bulk write on a busy database is
-            therefore not cheap, and a large keyspace makes it slower still —
-            another reason to keep <code>cachePrefix</code> tight to your
-            application rather than sharing a Redis database.
+            Pattern invalidation scans the whole keyspace — Redis{" "}
+            <code>KEYS</code> on the shared backend, an equivalent glob walk in
+            process. A bulk write on a busy database is therefore not cheap, and
+            a large keyspace makes it slower still — another reason to keep{" "}
+            <code>cachePrefix</code> tight to your application rather than
+            sharing a Redis database.
           </p>
         </section>
 
@@ -228,6 +289,7 @@ find:<table>:*                            # invalidated, but never read`}
             language="typescript"
             code={`const stats = await orm.getCacheStats();
 
+console.log(\`Backend: \${stats.backend}\`);     // "redis" | "memory" | "disabled"
 console.log(\`Cache Hits: \${stats.hits}\`);
 console.log(\`Cache Misses: \${stats.misses}\`);
 console.log(\`Total Keys: \${stats.keys}\`);
@@ -238,31 +300,64 @@ const ratio = total > 0 ? (stats.hits / total * 100).toFixed(1) : "0";
 console.log(\`Hit Ratio: \${ratio}%\`);`}
           />
           <p className="text-muted-foreground mt-4">
+            <code>backend</code> is there so a cache that is doing nothing is
+            distinguishable from one that is merely cold.{" "}
+            <code>&quot;disabled&quot;</code> means <code>enabled</code> was
+            false. <code>&quot;memory&quot;</code> means no{" "}
+            <code>redisUrl</code> was configured and the cache is confined to this
+            process — which is a fact about the deployment you want to see, not
+            infer from a hit ratio. <code>&quot;redis&quot;</code> reports the{" "}
+            <em>configuration</em>, not the connection: <code>ioredis</code>{" "}
+            connects lazily and may fail to connect later.
+          </p>
+          <p className="text-muted-foreground mt-4">
             Read the hit ratio with care. Because only <code>findOne()</code>{" "}
             consults the cache, hits and misses count <code>findOne</code> calls
             alone — a service that lists rows through <code>find()</code> will
             report a near-zero ratio however well the cache is working. A miss is
-            also only counted when Redis actually answers: if the connection is
-            down, the failure is swallowed and the read falls through to the
-            database without being recorded either way.
+            also only counted when the backend actually answers: if the
+            connection is down, the failure is swallowed and the read falls
+            through to the database without being recorded either way.
+          </p>
+          <p className="text-muted-foreground mt-4">
+            <code>orm.healthCheck()</code> names the backend too, rather than
+            reducing it to connected-or-not — an in-process cache has no
+            connection to report:
+          </p>
+          <CodeBlock
+            filename="health.ts"
+            language="typescript"
+            code={`await orm.healthCheck();
+// { status: "healthy", database: "postgres", latencyMs: 1.2,
+//   cacheStatus: "in-memory" }`}
+          />
+          <p className="text-muted-foreground mt-4">
+            <code>cacheStatus</code> is <code>&quot;in-memory&quot;</code> for the
+            in-process backend, <code>&quot;disabled&quot;</code> when caching is
+            off, and <code>&quot;connected&quot;</code> or{" "}
+            <code>&quot;connected (miss)&quot;</code> for Redis depending on
+            whether the probe key was found. A round trip that throws surfaces as{" "}
+            <code>&quot;unknown&quot;</code>.
           </p>
         </section>
 
         <section>
-          <h2 className="text-2xl font-semibold mb-4">When Redis Fails</h2>
+          <h2 className="text-2xl font-semibold mb-4">When the Cache Fails</h2>
           <p className="text-muted-foreground mb-4">
             Cache operations never throw. Every method on the cache catches its
             own errors, logs them through the ORM logger, and returns the
             &ldquo;nothing there&rdquo; answer: <code>get</code> returns{" "}
             <code>null</code>, <code>set</code> and <code>invalidate</code> do
-            nothing, <code>getStats</code> reports zero keys.
+            nothing, <code>getStats</code> reports zero keys. A value in the store
+            that cannot be parsed counts as a miss rather than an error, because a
+            value that cannot be returned was not a hit.
           </p>
           <p className="text-muted-foreground mb-4">
-            That is the right default — a Redis outage should degrade to database
-            reads, not to 500s — but it means an unreachable cache is invisible
-            from the application side. Watch the logger for Redis errors, or
-            compare the hit ratio against query volume, rather than assuming a
-            configured cache is a working one.
+            That is the right default — a backend outage should degrade to
+            database reads, not to 500s — but it means an unreachable cache is
+            invisible from the application side. Watch the logger, or compare the
+            hit ratio against query volume, rather than assuming a configured
+            cache is a working one.
           </p>
         </section>
 
@@ -274,8 +369,9 @@ console.log(\`Hit Ratio: \${ratio}%\`);`}
             code={`interface CacheConfig {
   enabled: boolean;           // Enable/disable caching
   ttl: number;                // Time-to-live in seconds
-  redisUrl?: string;          // Redis URL — required for the cache to do anything
+  redisUrl?: string;          // Shared cache. Omit for the in-process one.
   cachePrefix?: string;       // Key prefix for namespacing. Defaults to ""
+  maxEntries?: number;        // In-process LRU bound. Defaults to 1000.
   strategy?: "cache-aside" | "write-through";
 }`}
           />
@@ -292,6 +388,12 @@ console.log(\`Hit Ratio: \${ratio}%\`);`}
               anything else in that Redis database.
             </li>
             <li>
+              <code>maxEntries</code> applies only to the in-process backend, and
+              defaults to 1000. It is ignored when <code>redisUrl</code> is set —
+              Redis does its own eviction, and a second, invisible one on top
+              would be worse than none.
+            </li>
+            <li>
               <code>ttl</code> applies to reads that populate the cache. Entries
               written by the write-through path use a fixed 60-second TTL
               regardless of what you set here.
@@ -304,7 +406,7 @@ console.log(\`Hit Ratio: \${ratio}%\`);`}
             <p className="text-sm text-muted-foreground">
               Decryption runs before a row reaches the cache, and caching
               happens after the row transform, so an encrypted column is stored
-              decrypted in Redis. See{" "}
+              decrypted — in Redis, or in the process&apos;s own memory. See{" "}
               <a className="underline" href="/docs/encryption">
                 Column Encryption
               </a>{" "}

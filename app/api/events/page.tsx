@@ -87,28 +87,21 @@ orm.events: StabilizeEmitter`}
   | "connection:open"
   | "connection:close";`}
               />
-              <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5 mb-4">
-                <p className="text-sm font-semibold mb-2">
-                  Only two of these are ever emitted.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  The library emits <code>connection:open</code> and{" "}
-                  <code>connection:close</code> and nothing else. The other
-                  seven names are declared in the union but are never fired by
-                  the library &mdash; a handler registered for them will never
-                  run. Do not build features on <code>query</code>,{" "}
-                  <code>error</code> or the migration and transaction events.
-                </p>
-              </div>
-              <h3 className="font-semibold mb-2">Emitted events:</h3>
-              <ul className="space-y-2 mb-4">
+              <p className="text-muted-foreground mb-4">
+                All nine names are emitted. Each event carries one payload
+                object, except <code>connection:open</code>, which carries the{" "}
+                <code>DBType</code> on its own.
+              </p>
+              <ul className="space-y-2">
                 <li>
                   <Badge variant="outline" className="mr-2">
                     connection:open
                   </Badge>{" "}
                   <span className="text-muted-foreground">
                     Payload is the <code>DBType</code>, e.g.{" "}
-                    <code>&quot;postgres&quot;</code>
+                    <code>&quot;postgres&quot;</code>. Fires from the{" "}
+                    <code>Stabilize</code> constructor &mdash; see the note
+                    below.
                   </span>
                 </li>
                 <li>
@@ -117,15 +110,13 @@ orm.events: StabilizeEmitter`}
                   </Badge>{" "}
                   <span className="text-muted-foreground">No payload</span>
                 </li>
-              </ul>
-              <h3 className="font-semibold mb-2">Declared but never fired:</h3>
-              <ul className="space-y-2">
                 <li>
                   <Badge variant="outline" className="mr-2">
                     query
                   </Badge>{" "}
                   <span className="text-muted-foreground">
-                    Declared in the union; never emitted
+                    <code>{`{ dbType, query, params, executionTime }`}</code>{" "}
+                    &mdash; once per statement, after it returns
                   </span>
                 </li>
                 <li>
@@ -133,23 +124,12 @@ orm.events: StabilizeEmitter`}
                     error
                   </Badge>{" "}
                   <span className="text-muted-foreground">
-                    Declared in the union; never emitted
-                  </span>
-                </li>
-                <li>
-                  <Badge variant="outline" className="mr-2">
-                    migration:start
-                  </Badge>{" "}
-                  <span className="text-muted-foreground">
-                    Declared in the union; never emitted
-                  </span>
-                </li>
-                <li>
-                  <Badge variant="outline" className="mr-2">
-                    migration:complete
-                  </Badge>{" "}
-                  <span className="text-muted-foreground">
-                    Declared in the union; never emitted
+                    <code>{`{ dbType, phase, error, ... }`}</code> &mdash;{" "}
+                    <code>phase</code> is <code>&quot;query&quot;</code>,{" "}
+                    <code>&quot;migration&quot;</code> or{" "}
+                    <code>&quot;transaction&quot;</code>. The query phase fires
+                    on <em>every</em> attempt, so it also reports failures that
+                    were retried and succeeded.
                   </span>
                 </li>
                 <li>
@@ -157,7 +137,8 @@ orm.events: StabilizeEmitter`}
                     transaction:start
                   </Badge>{" "}
                   <span className="text-muted-foreground">
-                    Declared in the union; never emitted
+                    <code>{`{ dbType }`}</code> &mdash; not fired for a nested
+                    call already inside a transaction
                   </span>
                 </li>
                 <li>
@@ -165,7 +146,8 @@ orm.events: StabilizeEmitter`}
                     transaction:complete
                   </Badge>{" "}
                   <span className="text-muted-foreground">
-                    Declared in the union; never emitted
+                    <code>{`{ dbType }`}</code> &mdash; after the transaction
+                    commits
                   </span>
                 </li>
                 <li>
@@ -173,10 +155,36 @@ orm.events: StabilizeEmitter`}
                     transaction:error
                   </Badge>{" "}
                   <span className="text-muted-foreground">
-                    Declared in the union; never emitted
+                    <code>{`{ dbType, phase: "transaction", error }`}</code>{" "}
+                    &mdash; the callback threw and the transaction rolled back
+                  </span>
+                </li>
+                <li>
+                  <Badge variant="outline" className="mr-2">
+                    migration:start
+                  </Badge>{" "}
+                  <span className="text-muted-foreground">
+                    <code>{`{ dbType, name, index, total }`}</code> &mdash; once
+                    per migration, or per table for{" "}
+                    <code>autoMigrate()</code>
+                  </span>
+                </li>
+                <li>
+                  <Badge variant="outline" className="mr-2">
+                    migration:complete
+                  </Badge>{" "}
+                  <span className="text-muted-foreground">
+                    <code>{`{ dbType, name, index, total }`}</code>
                   </span>
                 </li>
               </ul>
+              <p className="text-muted-foreground mt-6">
+                <code>connection:open</code> fires inside the constructor, before
+                the instance is returned, so a handler registered on{" "}
+                <code>orm.events</code> afterwards never sees it. Build a{" "}
+                <code>StabilizeEmitter</code>, subscribe, then pass it as the
+                fifth constructor argument.
+              </p>
             </Card>
 
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">

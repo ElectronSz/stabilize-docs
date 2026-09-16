@@ -7,7 +7,8 @@ export default function EventsPage() {
     <div className="container mx-auto max-w-4xl py-12 md:py-16">
           <h1 className="text-4xl font-bold mb-4">Events</h1>
           <p className="text-lg text-muted-foreground mb-8">
-            Observe connection lifecycle from a single subscription point. <br />
+            Observe the ORM from a single subscription point — connections,
+            queries, errors, transactions and migrations. <br />
             For row-level changes — before create, after update — use{" "}
             <a href="/docs/hooks" className="text-accent underline">
               Lifecycle Hooks
@@ -69,52 +70,129 @@ orm.events.off("connection:open", () => console.log("hi"));`}
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold mb-4">Right Now: Two Events Fire</h2>
-              <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5 mb-4">
-                <p className="text-sm font-semibold mb-2">
-                  The event list is wider than the implementation
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  The <code>StabilizeEvent</code> type declares nine names, but
-                  only two are emitted anywhere in the library today:{" "}
-                  <code>connection:open</code> and{" "}
-                  <code>connection:close</code>. The remaining seven are
-                  reserved — a handler registered for them will simply never be
-                  called. This is documented here rather than omitted so you can
-                  plan around it.
-                </p>
-              </div>
+              <h2 className="text-2xl font-semibold mb-4">The Events</h2>
+              <p className="text-muted-foreground mb-4">
+                Nine names are declared, and all nine are emitted. Each carries a
+                single payload object — except{" "}
+                <code className="text-accent">connection:open</code>, which
+                carries the backend name on its own.
+              </p>
               <CodeBlock
                 filename="events.ts"
                 language="typescript"
-                code={`// Fired today
-"connection:open"          // payload: DBType
-"connection:close"         // no payload
+                code={`"connection:open"        // DBType  — "postgres" | "mysql" | "sqlite" | "mssql" | "mongodb"
+"connection:close"       // no payload
 
-// Declared but never emitted - handlers will not run
-"query"
-"error"
-"migration:start"
-"migration:complete"
-"transaction:start"
-"transaction:complete"
-"transaction:error"`}
+"query"                  // { dbType, query, params, executionTime }
+"error"                  // { dbType, phase, error, ... }  see below
+
+"transaction:start"      // { dbType }
+"transaction:complete"   // { dbType }
+"transaction:error"      // { dbType, phase: "transaction", error }
+
+"migration:start"        // { dbType, name, index, total }
+"migration:complete"     // { dbType, name, index, total }`}
+              />
+
+              <h3 className="text-lg font-semibold mt-8 mb-3">The error payload</h3>
+              <p className="text-muted-foreground mb-4">
+                <code className="text-accent">error</code> is the one event whose
+                shape depends on where it came from.{" "}
+                <code className="text-accent">phase</code> tells you which, and
+                is always present, so a listener filtering on it sees every
+                error:
+              </p>
+              <CodeBlock
+                filename="error-payload.ts"
+                language="typescript"
+                code={`// phase: "query" - thrown by the retry loop, on every attempt, not only the last
+{ dbType, phase: "query", query, params, attempt, attempts, error }
+
+// phase: "migration" - a migration step failed
+{ dbType, phase: "migration", error }
+
+// phase: "transaction" - the callback threw, and the transaction rolled back
+{ dbType, phase: "transaction", error }`}
               />
               <p className="text-muted-foreground mt-4">
-                For the capabilities the unused names suggest, use the
-                alternatives that are implemented:{" "}
-                <a href="/docs/logging" className="text-accent underline">
-                  Logging
-                </a>{" "}
-                for query and error visibility,{" "}
-                <a href="/docs/hooks" className="text-accent underline">
-                  Lifecycle Hooks
-                </a>{" "}
-                for per-row change events, and the return value of{" "}
-                <a href="/docs/transactions" className="text-accent underline">
-                  transaction()
-                </a>{" "}
-                to detect success or failure.
+                Because <code className="text-accent">error</code> fires on every
+                attempt, a query that fails twice and then succeeds produces two{" "}
+                <code className="text-accent">error</code> events and no failed
+                call. Compare{" "}
+                <code className="text-accent">attempt</code> against{" "}
+                <code className="text-accent">attempts</code> to tell a transient
+                failure from the one that ended it.
+              </p>
+
+              <h3 className="text-lg font-semibold mt-8 mb-3">
+                migration:start carries a position
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                Both migration events fire once per unit of work rather than once
+                per run, and report where that unit sits in the list. A run of
+                forty migrations gives forty pairs, so progress can be shown
+                against a real total instead of a single start and end you
+                cannot attribute to anything.
+              </p>
+              <CodeBlock
+                filename="progress.ts"
+                language="typescript"
+                code={`orm.events.on("migration:complete", ({ name, index, total }) => {
+  console.log(\`[\${index + 1}/\${total}] \${name}\`);
+});`}
+              />
+              <p className="text-muted-foreground mt-4">
+                <code className="text-accent">name</code> is the migration&apos;s
+                name for{" "}
+                <code className="text-accent">migrate()</code>, and the table or
+                collection being reconciled for{" "}
+                <code className="text-accent">autoMigrate()</code> — which a
+                caller who never wrote a migration could not otherwise attribute.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-semibold mb-4">
+                connection:open Fires Before You Can Subscribe
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                The connection opens inside the{" "}
+                <code className="text-accent">Stabilize</code> constructor, so it
+                is announced before the instance is returned to you. An{" "}
+                <code className="text-accent">on()</code> call afterwards is
+                simply too late:
+              </p>
+              <CodeBlock
+                filename="too-late.ts"
+                language="typescript"
+                code={`const orm = new Stabilize(dbConfig);
+orm.events.on("connection:open", handler);   // never called - already fired`}
+              />
+              <p className="text-muted-foreground my-4">
+                Build the emitter yourself, subscribe, then pass it in. The
+                fifth constructor argument is the only way to hear that first
+                event:
+              </p>
+              <CodeBlock
+                filename="events.ts"
+                language="typescript"
+                code={`import { Stabilize, StabilizeEmitter } from "stabilize-orm";
+
+const events = new StabilizeEmitter();
+
+events.on("connection:open", (type) => {
+  console.log("Connected to " + type);
+});
+
+const orm = new Stabilize(dbConfig, cacheConfig, loggerConfig, undefined, events);`}
+              />
+              <p className="text-muted-foreground mt-4">
+                Passing the same emitter to several instances is supported — the
+                client adopts it rather than building its own, so every{" "}
+                <code className="text-accent">query</code>,{" "}
+                <code className="text-accent">error</code> and{" "}
+                <code className="text-accent">transaction:*</code> reaches the
+                handlers you registered.
               </p>
             </section>
 
