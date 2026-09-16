@@ -31,11 +31,11 @@ export function Hero() {
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
           {/* Release line — plain muted text, deliberately not a pill. */}
           <p className="text-small text-muted-foreground mb-8 animate-fade-in">
-            <span className="font-medium">v3.0.0</span>
+            <span className="font-medium">v3.1.0</span>
             <span className="mx-2" aria-hidden="true">
               |
             </span>
-            MongoDB support
+            Declared column sizes enforced
           </p>
 
           <h1 className="text-display mb-6 animate-slide-up">
