@@ -46,8 +46,8 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-small text-muted-foreground leading-relaxed">
-              A modern, type-safe ORM for Bun with unified PostgreSQL, MySQL,
-              SQLite, and SQL Server support.
+              A type-safe ORM for Bun with unified PostgreSQL, MySQL, SQLite,
+              SQL Server, and MongoDB support.
             </p>
           </div>
 

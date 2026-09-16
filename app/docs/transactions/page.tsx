@@ -8,7 +8,7 @@ export default function TransactionsPage() {
           <h1 className="text-4xl font-bold mb-4">Transactions</h1>
           <p className="text-lg text-muted-foreground mb-8">
             Ensure data integrity with atomic database transactions. <br />
-            Stabilize provides a unified API for transactions across PostgreSQL, MySQL, SQLite, and SQL Server.
+            Stabilize provides a unified API for transactions across PostgreSQL, MySQL, SQLite, SQL Server, and MongoDB. On MongoDB, transactions require a replica set.
           </p>
 
           <div className="space-y-8">
@@ -99,7 +99,7 @@ await orm.transaction(async (txClient) => {
                 filename="client.ts"
                 language="typescript"
                 code={`await dbClient.transaction(async (txClient) => {
-  // Works with PostgreSQL, MySQL, SQLite, and SQL Server!
+  // Works with PostgreSQL, MySQL, SQLite, SQL Server, and MongoDB.
   await repo.create(data, {}, txClient);
 });`}
               />

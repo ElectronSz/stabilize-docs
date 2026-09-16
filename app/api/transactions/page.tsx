@@ -74,7 +74,9 @@ await orm.transaction(async (tx) => {
                 <code>orm.client</code>. It throws a{" "}
                 <code>StabilizeError</code> with code{" "}
                 <code>TX_ERROR</code> when the underlying client is none of the
-                four supported drivers.
+                five supported drivers. MongoDB is one of the five; its driver
+                is an optional dependency, and it serves transactions only on a
+                replica set or sharded cluster.
               </p>
             </Card>
 
@@ -290,7 +292,7 @@ recover()       rollback()      sync()        upsertMany()`}
                   Transaction not supported by this client configuration.
                 </code>{" "}
                 when the client behind the call is not a recognised SQLite,
-                PostgreSQL, MySQL or SQL Server handle.
+                PostgreSQL, MySQL, SQL Server or MongoDB handle.
               </p>
               <CodeBlock
                 filename="example/tx-error.ts"
@@ -301,7 +303,7 @@ try {
   await orm.transaction(async (tx) => { /* ... */ });
 } catch (err) {
   if (err instanceof StabilizeError && err.code === "TX_ERROR") {
-    // The client is not one of the four supported drivers.
+    // The client is not one of the five supported drivers.
   }
 }`}
               />

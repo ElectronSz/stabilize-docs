@@ -130,7 +130,7 @@ export default function CLIPage() {
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 mb-4">
             <Terminal className="h-3.5 w-3.5 text-accent" />
-            <span className="text-sm font-medium text-accent">v2.2.0</span>
+            <span className="text-sm font-medium text-accent">v2.2.1</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
             CLI Reference
@@ -143,7 +143,7 @@ export default function CLIPage() {
 
         <TerminalBlock title="install">
           <Prompt cmd="bun add -g stabilize-cli" />
-          <Out color="text-[#28c840]">✔ installed stabilize-cli@2.2.0</Out>
+          <Out color="text-[#28c840]">✔ installed stabilize-cli@2.2.1</Out>
         </TerminalBlock>
 
         <div className="mb-8">

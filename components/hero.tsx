@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import {
+  MongoDBMark,
   MySQLMark,
   PostgreSQLMark,
   SQLiteMark,
@@ -17,6 +18,7 @@ const databases = [
   { name: "MySQL", icon: MySQLMark },
   { name: "SQLite", icon: SQLiteMark },
   { name: "SQL Server", icon: SqlServerMark },
+  { name: "MongoDB", icon: MongoDBMark },
 ];
 
 export function Hero() {
@@ -29,11 +31,11 @@ export function Hero() {
         <div className="flex flex-col items-center text-center max-w-3xl mx-auto">
           {/* Release line — plain muted text, deliberately not a pill. */}
           <p className="text-small text-muted-foreground mb-8 animate-fade-in">
-            <span className="font-medium">v2.1.0</span>
+            <span className="font-medium">v3.0.0</span>
             <span className="mx-2" aria-hidden="true">
               |
             </span>
-            Backup, restore & API generation
+            MongoDB support
           </p>
 
           <h1 className="text-display mb-6 animate-slide-up">
@@ -45,9 +47,9 @@ export function Hero() {
             className="text-body-lg text-muted-foreground max-w-2xl mb-10 animate-slide-up"
             style={{ animationDelay: "0.1s" }}
           >
-            A modern, type-safe ORM for Bun with a unified API for PostgreSQL,
-            MySQL, SQLite, and SQL Server. Define models, run migrations, and
-            query data with a clean, fluent interface.
+            A type-safe ORM for Bun that runs the same models against
+            PostgreSQL, MySQL, SQLite, SQL Server, and MongoDB. Define models,
+            run migrations and query data through one interface.
           </p>
 
           <div

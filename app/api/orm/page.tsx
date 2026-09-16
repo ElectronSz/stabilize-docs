@@ -101,6 +101,7 @@ const orm = new Stabilize(
   MySQL    = "mysql",
   SQLite   = "sqlite",
   MSSQL    = "mssql",
+  MongoDB  = "mongodb",
 }`}
               />
               <p className="text-muted-foreground mb-4">
@@ -109,14 +110,17 @@ const orm = new Stabilize(
                 appears in DDL and in <code>healthCheck()</code> output.
               </p>
               <p className="text-muted-foreground mb-4">
-                All four dialects are supported targets. The driver behind{" "}
+                All four SQL dialects are supported targets. The driver behind{" "}
                 <code>MSSQL</code> is SQL Server, reached through the{" "}
                 <code>mssql</code> package; it is the newest of the four and the
                 one whose dialect support differs most from the others &mdash;
                 no <code>FOR UPDATE</code> clause, no{" "}
                 <code>BEGIN</code>/<code>COMMIT</code> text, a server-side
                 transaction object, and <code>INT IDENTITY(1,1)</code> rather
-                than auto-increment syntax.
+                than auto-increment syntax. <code>MongoDB</code> is a fifth
+                target, and not a dialect. It is a document store, reached
+                through the optional <code>mongodb</code> package, and its
+                transactions need a replica set or sharded cluster.
               </p>
               <CodeBlock
                 filename="example/db-type.ts"

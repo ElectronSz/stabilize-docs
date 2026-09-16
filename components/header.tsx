@@ -12,6 +12,7 @@ const navLinks = [
   { href: "/guides", label: "Guides" },
   { href: "/api", label: "API" },
   { href: "/examples", label: "Examples" },
+  { href: "/docs/cli", label: "CLI" },
 ];
 
 export function Header() {

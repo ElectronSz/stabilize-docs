@@ -69,7 +69,7 @@ export default function CliApiPage() {
       <div className="mx-auto max-w-4xl">
         <h1 className="text-4xl font-bold mb-2">CLI Commands</h1>
         <p className="text-lg text-muted-foreground mb-8">
-          Stabilize CLI v2.2.0 — 31 commands with shorthand aliases
+          Stabilize CLI v2.2.1 — 31 commands with shorthand aliases
         </p>
         <p className="text-sm text-muted-foreground mb-8">
           The CLI is versioned independently of the ORM: this is the version of

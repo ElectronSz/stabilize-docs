@@ -20,7 +20,7 @@ const groups = [
       {
         icon: Database,
         title: "Unified API",
-        desc: "One codebase runs on PostgreSQL, MySQL, and SQLite.",
+        desc: "One codebase runs on PostgreSQL, MySQL, SQLite, SQL Server, and MongoDB.",
       },
       {
         icon: Zap,
@@ -69,7 +69,7 @@ const groups = [
     items: [
       {
         icon: Terminal,
-        title: "CLI (23 commands)",
+        title: "CLI (31 commands)",
         desc: "Generate models, migrations, seeds, APIs.",
       },
       {

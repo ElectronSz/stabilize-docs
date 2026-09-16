@@ -18,7 +18,7 @@ export default function DatabaseSetupPage() {
           </h1>
         </div>
         <p className="text-lg text-muted-foreground mb-8">
-          Learn how to configure PostgreSQL, MySQL, SQLite, or SQL Server with Stabilize ORM
+          Learn how to configure PostgreSQL, MySQL, SQLite, SQL Server, or MongoDB with Stabilize ORM
         </p>
 
         <div className="space-y-8">
@@ -263,6 +263,76 @@ export const orm = new Stabilize(dbConfig, { enabled: false, ttl: 60 });`}
             </CardContent>
           </Card>
 
+          <Card className="border-accent/20 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle>MongoDB Setup</CardTitle>
+              <CardDescription>
+                For document-oriented workloads
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <h3 className="font-semibold mb-2">1. Install MongoDB</h3>
+                <CodeBlock
+                  code={`# Docker (Linux, macOS, Windows)
+# --replSet is what makes this a single-node replica set; transactions need one
+docker run -d --name stabilize-mongo -p 27017:27017 \\
+  mongo:7 --replSet rs0 --bind_ip_all
+
+# Initiate the set once, after the container is up
+mongosh --quiet --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"127.0.0.1:27017"}]})'
+
+# Or use a managed service such as MongoDB Atlas`}
+                  language="bash"
+                />
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">2. Install the Driver</h3>
+                <CodeBlock code="bun add mongodb" language="bash" />
+                <p className="text-sm text-muted-foreground mt-3">
+                  The driver is an optional dependency and is not installed with
+                  the ORM. A missing driver throws{" "}
+                  <code>MONGO_DRIVER_MISSING</code> on the first statement, not
+                  when the config is imported.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">3. Configure Stabilize</h3>
+                <CodeBlock
+                  filename="config/database.ts"
+                  language="typescript"
+                  code={`import { Stabilize, DBType, type DBConfig } from "stabilize-orm";
+
+const dbConfig: DBConfig = {
+  type: DBType.MongoDB,
+  connectionString:
+    "mongodb://127.0.0.1:27017/myapp?directConnection=true&replicaSet=rs0",
+  retryAttempts: 3,
+  retryDelay: 1000,
+  maxJitter: 100,
+};
+
+export const orm = new Stabilize(dbConfig, { enabled: false, ttl: 60 });`}
+                />
+                <p className="text-sm text-muted-foreground mt-3">
+                  Two options in the connection string matter here.{" "}
+                  <code>directConnection=true</code> skips topology discovery,
+                  which a single-node set needs when the member registers itself
+                  under a container-local address, and{" "}
+                  <code>replicaSet=rs0</code> names the set to join.
+                  Transactions require a replica set or sharded cluster, and
+                  every ORM write is wrapped in one, so a standalone{" "}
+                  <code>mongod</code> answers every read and then fails every
+                  write. The separate <code>database</code> field is consulted
+                  only when the connection string has no database path of its
+                  own.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           <section>
             <h2 className="text-2xl font-bold mb-4">Environment Variables</h2>
             <p className="text-muted-foreground mb-4">
@@ -288,13 +358,14 @@ export const orm = new Stabilize(dbConfig, { enabled: false, ttl: 60 });`}
                 The connection string is the whole story
               </p>
               <p className="text-sm text-muted-foreground">
-                Every pool is built from <code>connectionString</code> alone.
-                There is no <code>max</code>, <code>min</code>,{" "}
+                Every SQL pool is built from <code>connectionString</code>{" "}
+                alone. There is no <code>max</code>, <code>min</code>,{" "}
                 <code>idleTimeout</code> or <code>connectionLimit</code> field
                 on <code>DBConfig</code> — retries are governed by{" "}
                 <code>retryAttempts</code>, <code>retryDelay</code> and{" "}
                 <code>maxJitter</code>, and everything else is whatever the
-                driver reads out of the connection string.
+                driver reads out of the connection string. MongoDB also reads{" "}
+                <code>database</code> and <code>mongoOptions</code>.
               </p>
             </div>
           </section>
