@@ -17,7 +17,7 @@ export default function InstallationPage() {
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
-              <span>PostgreSQL, MySQL, SQLite, or SQL Server database</span>
+              <span>PostgreSQL, MySQL, SQLite, SQL Server, or MongoDB database</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
@@ -48,8 +48,8 @@ export default function InstallationPage() {
 
         <h2 className="text-2xl font-semibold mb-4">Database Drivers</h2>
         <p className="mb-4">
-          The drivers are dependencies of <code>stabilize-orm</code> itself, so there is nothing
-          extra to install. All four dialects are available out of the box:
+          The drivers for the four SQL dialects are dependencies of <code>stabilize-orm</code>{" "}
+          itself, so there is nothing extra to install for them:
         </p>
         <div className="flex flex-wrap gap-2 mb-4">
           <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">PostgreSQL</Badge>
@@ -57,7 +57,7 @@ export default function InstallationPage() {
           <Badge className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">SQLite</Badge>
           <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">SQL Server</Badge>
         </div>
-        <ul className="space-y-2 mb-6 text-sm text-muted-foreground">
+        <ul className="space-y-2 mb-4 text-sm text-muted-foreground">
           <li>
             <code>pg</code> for PostgreSQL and <code>mysql2</code> for MySQL — bundled dependencies,
             not native Bun modules
@@ -72,6 +72,16 @@ export default function InstallationPage() {
             <code>ioredis</code> if you enable Redis-backed caching
           </li>
         </ul>
+        <p className="mb-4 text-sm text-muted-foreground">
+          MongoDB is the exception. Its driver is an <strong>optional</strong> dependency rather
+          than a bundled one, so it is installed alongside the ORM — and a MongoDB client without
+          it fails with <code>MONGO_DRIVER_MISSING</code> on the first statement, not at import
+          time. See <a className="underline" href="/docs/mongodb">MongoDB</a> for what else the
+          backend changes.
+        </p>
+        <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4 mb-6">
+          <code className="text-sm font-mono">bun add mongodb</code>
+        </div>
 
         <h2 className="text-2xl font-semibold mb-4">Next Steps</h2>
         <p className="mb-4">Now that you have Stabilize installed, you can:</p>

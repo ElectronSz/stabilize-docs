@@ -177,6 +177,7 @@ export const NAV_MANIFEST: Record<NavSectionKey, NavManifestSection> = {
           { slug: "mysql", title: "MySQL and MariaDB" },
           { slug: "sqlite", title: "SQLite" },
           { slug: "mssql", title: "SQL Server" },
+          { slug: "mongodb", title: "MongoDB" },
         ],
       },
     ],

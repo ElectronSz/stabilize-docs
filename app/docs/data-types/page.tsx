@@ -1,19 +1,33 @@
 import { CodeBlock } from "@/components/code-block";
 
-const rows: [string, string, string, string, string][] = [
-  ["STRING", "TEXT", "VARCHAR(255)", "TEXT", "NVARCHAR(255)"],
-  ["TEXT", "TEXT", "TEXT", "TEXT", "NVARCHAR(MAX)"],
-  ["INTEGER", "INTEGER", "INT", "INTEGER", "INT"],
-  ["BIGINT", "BIGINT", "BIGINT", "INTEGER", "BIGINT"],
-  ["FLOAT", "REAL", "FLOAT", "REAL", "REAL"],
-  ["DOUBLE", "DOUBLE PRECISION", "DOUBLE", "REAL", "FLOAT"],
-  ["DECIMAL", "DECIMAL", "DECIMAL(10,2)", "NUMERIC", "DECIMAL(10,2)"],
-  ["BOOLEAN", "BOOLEAN", "TINYINT(1)", "INTEGER", "BIT"],
-  ["DATE", "DATE", "DATE", "TEXT", "DATE"],
-  ["DATETIME", "TIMESTAMP", "DATETIME", "TEXT", "DATETIME2"],
-  ["JSON", "JSONB", "JSON", "TEXT", "NVARCHAR(MAX)"],
-  ["UUID", "UUID", "CHAR(36)", "TEXT", "UNIQUEIDENTIFIER"],
-  ["BLOB", "BYTEA", "BLOB", "BLOB", "VARBINARY(MAX)"],
+const rows: [string, string, string, string, string, string][] = [
+  ["STRING", "TEXT", "VARCHAR(255)", "TEXT", "NVARCHAR(255)", "string"],
+  ["TEXT", "TEXT", "TEXT", "TEXT", "NVARCHAR(MAX)", "string"],
+  ["INTEGER", "INTEGER", "INT", "INTEGER", "INT", "int | long | double"],
+  ["BIGINT", "BIGINT", "BIGINT", "INTEGER", "BIGINT", "int | long | double"],
+  ["FLOAT", "REAL", "FLOAT", "REAL", "REAL", "double | int | long | decimal"],
+  [
+    "DOUBLE",
+    "DOUBLE PRECISION",
+    "DOUBLE",
+    "REAL",
+    "FLOAT",
+    "double | int | long | decimal",
+  ],
+  [
+    "DECIMAL",
+    "DECIMAL",
+    "DECIMAL(10,2)",
+    "NUMERIC",
+    "DECIMAL(10,2)",
+    "double | int | long | decimal",
+  ],
+  ["BOOLEAN", "BOOLEAN", "TINYINT(1)", "INTEGER", "BIT", "bool"],
+  ["DATE", "DATE", "DATE", "TEXT", "DATE", "date | string"],
+  ["DATETIME", "TIMESTAMP", "DATETIME", "TEXT", "DATETIME2", "date | string"],
+  ["JSON", "JSONB", "JSON", "TEXT", "NVARCHAR(MAX)", "object | array | string"],
+  ["UUID", "UUID", "CHAR(36)", "TEXT", "UNIQUEIDENTIFIER", "string"],
+  ["BLOB", "BYTEA", "BLOB", "BLOB", "VARBINARY(MAX)", "binData | string"],
 ];
 
 export default function DataTypesPage() {
@@ -22,8 +36,9 @@ export default function DataTypesPage() {
       <h1 className="text-4xl font-bold mb-4">Data Types</h1>
       <p className="text-lg text-muted-foreground mb-8">
         <code>DataTypes</code> is the abstract type you declare on a column. Each
-        of the four dialects picks its own SQL type for it, so the same model
-        runs unchanged everywhere.
+        backend picks its own type for it — a SQL type on the four dialects, the
+        BSON types a validator accepts on MongoDB — so the same model runs
+        unchanged everywhere.
       </p>
 
       <div className="space-y-8">
@@ -52,7 +67,7 @@ DataTypes.BLOB
         <section>
           <h2 className="text-2xl font-semibold mb-4">The Mapping</h2>
           <p className="text-muted-foreground mb-4">
-            What each member becomes per dialect:
+            What each member becomes per backend:
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
@@ -64,11 +79,12 @@ DataTypes.BLOB
                     MySQL / MariaDB
                   </th>
                   <th className="text-left py-2 pr-4 font-semibold">SQLite</th>
-                  <th className="text-left py-2 font-semibold">SQL Server</th>
+                  <th className="text-left py-2 pr-4 font-semibold">SQL Server</th>
+                  <th className="text-left py-2 font-semibold">MongoDB</th>
                 </tr>
               </thead>
               <tbody className="text-muted-foreground">
-                {rows.map(([dt, pg, my, lite, ms]) => (
+                {rows.map(([dt, pg, my, lite, ms, mongo]) => (
                   <tr key={dt} className="border-b border-accent/10">
                     <td className="py-2 pr-4">
                       <code>DataTypes.{dt}</code>
@@ -82,8 +98,11 @@ DataTypes.BLOB
                     <td className="py-2 pr-4">
                       <code>{lite}</code>
                     </td>
-                    <td className="py-2">
+                    <td className="py-2 pr-4">
                       <code>{ms}</code>
+                    </td>
+                    <td className="py-2">
+                      <code>{mongo}</code>
                     </td>
                   </tr>
                 ))}
@@ -92,10 +111,18 @@ DataTypes.BLOB
           </div>
           <p className="text-muted-foreground mt-4">
             An unrecognised type falls back rather than failing:{" "}
-            <code>TEXT</code> on Postgres, MySQL and SQLite, and{" "}
+            <code>TEXT</code> on Postgres, MySQL and SQLite,{" "}
             <code>NVARCHAR(MAX)</code> on SQL Server — T-SQL&apos;s own{" "}
             <code>TEXT</code> is deprecated and unusable in most expressions, so
-            it is never emitted.
+            it is never emitted — and <code>string</code> on MongoDB.
+          </p>
+          <p className="text-muted-foreground mt-4">
+            The MongoDB column is a list rather than a single type because it is
+            a <code>$jsonSchema</code> validator rather than a column
+            declaration, and several members accept more than one BSON type on
+            purpose: a JavaScript integer arrives as an <code>int</code> inside
+            32-bit range and a <code>double</code> beyond it, so accepting only{" "}
+            <code>int</code> would reject every id past two billion.
           </p>
         </section>
 
@@ -223,6 +250,32 @@ await postRepo.create({ id: "p1", title: "a great deal longer than five" });`}
             boolean through the ORM, so this is only worth knowing when you write
             raw SQL against the table — a <code>WHERE isActive = true</code> that
             works on Postgres will not parse on SQLite.
+          </p>
+
+          <h3 className="text-lg font-semibold mb-2 mt-6">
+            MongoDB validates the type instead of declaring it
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            There is no column to declare on a document store, so the declared
+            type becomes the <code>$jsonSchema</code> validator on the collection
+            and a value of the wrong BSON type is rejected by the server, where a
+            SQL backend would have coerced or truncated it. Two consequences
+            follow from the mapping above. Nothing is bounded:{" "}
+            <code>DataTypes.STRING</code> is a <code>string</code> of any length,
+            so the 255-character limit MySQL and SQL Server impose does not exist
+            here. And <code>DataTypes.DECIMAL</code> is a{" "}
+            <strong>
+              <code>double</code>
+            </strong>
+            , because MongoDB has no exact decimal unless the caller supplies a{" "}
+            <code>Decimal128</code> — so a money column loses precision the way
+            any binary float does. Store the smallest unit as an{" "}
+            <code>INTEGER</code>/<code>BIGINT</code>, or the value as a{" "}
+            <code>STRING</code>. See{" "}
+            <a className="underline" href="/docs/mongodb">
+              MongoDB
+            </a>
+            .
           </p>
         </section>
 
@@ -360,18 +413,21 @@ Postgres      id SERIAL PRIMARY KEY
 MySQL         id INT AUTO_INCREMENT PRIMARY KEY
 SQLite        id INTEGER PRIMARY KEY AUTOINCREMENT
 SQL Server    id INT IDENTITY(1,1) PRIMARY KEY
+MongoDB       _id from stabilize_counters
 
 -- id: DataTypes.STRING -- the caller supplies it
 Postgres      id UUID PRIMARY KEY
 MySQL         id VARCHAR(255) PRIMARY KEY
 SQLite        id TEXT PRIMARY KEY
 SQL Server    id NVARCHAR(255) PRIMARY KEY
+MongoDB       _id string, caller-supplied
 
 -- id: DataTypes.UUID -- the caller supplies it
 Postgres      id UUID PRIMARY KEY
 MySQL         id VARCHAR(255) PRIMARY KEY
 SQLite        id TEXT PRIMARY KEY
-SQL Server    id UNIQUEIDENTIFIER PRIMARY KEY`}
+SQL Server    id UNIQUEIDENTIFIER PRIMARY KEY
+MongoDB       _id string, caller-supplied`}
           />
           <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5 mt-4">
             <p className="text-sm font-semibold mb-2">
@@ -400,7 +456,11 @@ SQL Server    id UNIQUEIDENTIFIER PRIMARY KEY`}
             <a className="underline" href="/docs/mssql">
               SQL Server
             </a>
-            .
+            . On MongoDB the same <code>id</code> column is stored as the
+            document&apos;s <code>_id</code>, which is a storage detail inside
+            the backend rather than something the API exposes — and an integer{" "}
+            <code>id</code> there is allocated from a counters collection rather
+            than by the server.
           </p>
         </section>
 
