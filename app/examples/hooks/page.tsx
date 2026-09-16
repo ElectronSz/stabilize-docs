@@ -40,47 +40,58 @@ export default function HooksExamplePage() {
             <CodeBlock
               filename="examples/events.ts"
               language="typescript"
-              code={`const orm = new Stabilize(dbConfig);
+              code={`import { Stabilize, StabilizeEmitter } from "stabilize-orm";
 
-// Connection events
-orm.events.on("connection:open", (type) => {
-  console.log(\`Connected to \${type}\`);
+// connection:open fires from the constructor, before a handler registered on
+// orm.events afterwards could exist. Build the emitter, subscribe, then pass it
+// as the fifth argument.
+const events = new StabilizeEmitter();
+
+events.on("connection:open", (dbType) => {
+  console.log(\`Connected to \${dbType}\`);
 });
+
+const orm = new Stabilize(
+  dbConfig,
+  { enabled: false, ttl: 60 },
+  {},
+  undefined, // no shared client
+  events,
+);
 
 orm.events.on("connection:close", () => {
   console.log("Database connection closed");
 });
 
-// Query events
-orm.events.on("query", (query) => {
-  console.log("Executed:", query);
+// Every other event can be subscribed to normally, in any order.
+orm.events.on("query", ({ dbType, query, params, executionTime }) => {
+  console.log(\`\${dbType} \${query} in \${executionTime}ms\`, params);
 });
 
-// Error events
-orm.events.on("error", (error) => {
-  console.error("Database error:", error);
+// "phase" says which of the three sources raised it: "query", "transaction"
+// or "migration".
+orm.events.on("error", ({ phase, error }) => {
+  console.error(\`Database error during \${phase}:\`, error);
 });
 
-// Transaction events
-orm.events.on("transaction:start", () => {
-  console.log("Transaction started");
+orm.events.on("transaction:start", ({ dbType }) => {
+  console.log(\`Transaction started on \${dbType}\`);
 });
 
-orm.events.on("transaction:complete", () => {
-  console.log("Transaction committed");
+orm.events.on("transaction:complete", ({ dbType }) => {
+  console.log(\`Transaction committed on \${dbType}\`);
 });
 
-orm.events.on("transaction:error", (error) => {
-  console.error("Transaction rolled back:", error);
+orm.events.on("transaction:error", ({ dbType, error }) => {
+  console.error(\`Transaction rolled back on \${dbType}:\`, error);
 });
 
-// Migration events
-orm.events.on("migration:start", () => {
-  console.log("Migration started");
+orm.events.on("migration:start", ({ name, index, total }) => {
+  console.log(\`Migration \${index}/\${total} started: \${name}\`);
 });
 
-orm.events.on("migration:complete", () => {
-  console.log("Migration complete");
+orm.events.on("migration:complete", ({ name, index, total }) => {
+  console.log(\`Migration \${index}/\${total} complete: \${name}\`);
 });`}
             />
           </section>

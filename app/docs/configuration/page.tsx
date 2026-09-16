@@ -17,7 +17,8 @@ export default function ConfigurationPage() {
             </h2>
             <p className="text-muted-foreground mb-4">
               Stabilize supports PostgreSQL, MySQL, MariaDB, SQLite, and SQL
-              Server. Create a <code>DBConfig</code> object:
+              Server, plus a MongoDB document backend. Create a{" "}
+              <code>DBConfig</code> object:
             </p>
             <CodeBlock
               filename="config/database.ts"
@@ -89,11 +90,12 @@ const sqliteConfig: DBConfig = {
 import dbConfig from "../config/database";
 
 const cacheConfig: CacheConfig = {
-  enabled: false,                    // Enable for Redis-backed caching
+  enabled: false,                    // Turn caching on
   ttl: 60,                           // Cache TTL in seconds
-  redisUrl: process.env.REDIS_URL,   // Redis connection URL (optional)
+  redisUrl: process.env.REDIS_URL,   // Omit to cache in process instead
   cachePrefix: "myapp:",             // Key prefix for namespacing
   strategy: "cache-aside",           // "cache-aside" or "write-through"
+  maxEntries: 1000,                  // In-process bound; ignored with redisUrl
 };
 
 const loggerConfig: LoggerConfig = {
@@ -110,6 +112,17 @@ export const orm = new Stabilize(dbConfig, cacheConfig, loggerConfig);`}
               default <code>cacheConfig</code> is{" "}
               <code>{`{ enabled: false, ttl: 60 }`}</code>, so caching is off
               unless you turn it on.
+            </p>
+            <p className="text-muted-foreground mt-4">
+              <code>redisUrl</code> chooses the backend rather than enabling one:{" "}
+              with it, entries are cached in Redis and shared by every process
+              pointing at the same server. Without it they are cached in the
+              process itself, which needs no server to run but is not shared
+              between processes and is lost on restart — see{" "}
+              <a href="/docs/caching" className="text-accent underline">
+                Caching
+              </a>
+              . Either way, turning caching on now always caches something.
             </p>
             <p className="text-muted-foreground mt-4">
               <code>LogLevel</code> is a numeric enum, not a string one —{" "}
@@ -186,12 +199,18 @@ REDIS_URL=redis://localhost:6379
 CACHE_ENABLED=false`}
             />
             <p className="text-muted-foreground mt-4">
-              One variable is read by the ORM itself rather than by your config:{" "}
-              <code>ORM_ENCRYPTION_KEY</code>, which supplies the key for{" "}
+              Three variables are read by the ORM itself rather than by your
+              config: <code>ORM_ENCRYPTION_KEY</code> supplies the key for{" "}
               <a href="/docs/encryption" className="text-accent underline">
                 column encryption
               </a>
-              .
+              , <code>ORM_ENCRYPTION_KEY_FILE</code> names the file to read that
+              key from instead (default <code>.stabilize/encryption.key</code>),
+              and <code>ORM_ENCRYPTION_KEYS_OLD</code> lists retired keys that
+              still decrypt. If no key is configured at all, one is generated
+              into the key file on first use and a warning is emitted — so keep
+              that file out of version control rather than committing it by
+              accident.
             </p>
           </section>
 
@@ -200,11 +219,18 @@ CACHE_ENABLED=false`}
             <ul className="list-disc list-inside text-muted-foreground space-y-2">
               <li>
                 <code>type</code> - Database type: <code>DBType.Postgres</code>,{" "}
-                <code>DBType.MySQL</code>, <code>DBType.SQLite</code>, or{" "}
-                <code>DBType.MSSQL</code>. The underlying string values are{" "}
+                <code>DBType.MySQL</code>, <code>DBType.SQLite</code>,{" "}
+                <code>DBType.MSSQL</code>, or <code>DBType.MongoDB</code>. The
+                underlying string values are{" "}
                 <code>&quot;postgres&quot;</code>,{" "}
-                <code>&quot;mysql&quot;</code>, <code>&quot;sqlite&quot;</code>{" "}
-                and <code>&quot;mssql&quot;</code>.
+                <code>&quot;mysql&quot;</code>, <code>&quot;sqlite&quot;</code>,{" "}
+                <code>&quot;mssql&quot;</code> and{" "}
+                <code>&quot;mongodb&quot;</code>. The first four are SQL dialects;
+                see{" "}
+                <a href="/docs/mongodb" className="text-accent underline">
+                  MongoDB
+                </a>{" "}
+                for where the document backend differs.
               </li>
               <li>
                 <code>connectionString</code> - Connection string, or a file path

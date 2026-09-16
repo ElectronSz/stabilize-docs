@@ -69,12 +69,15 @@ export default function CliApiPage() {
       <div className="mx-auto max-w-4xl">
         <h1 className="text-4xl font-bold mb-2">CLI Commands</h1>
         <p className="text-lg text-muted-foreground mb-8">
-          Stabilize CLI v2.2.1 — 31 commands with shorthand aliases
+          Stabilize CLI v3.0.0 — 31 commands with shorthand aliases
         </p>
         <p className="text-sm text-muted-foreground mb-8">
           The CLI is versioned independently of the ORM: this is the version of
           the <code>stabilize-cli</code> package, which is not the same number as
-          the <code>stabilize-orm</code> release it depends on.
+          the <code>stabilize-orm</code> release it depends on. This release
+          bundles <code>stabilize-orm@3.x</code> and adds MongoDB support to every
+          command that touches the database, except <code>query</code> — a
+          document command is not a string, so there is nothing for it to run.
         </p>
 
         <Section icon={FileCode2} label="Generate">

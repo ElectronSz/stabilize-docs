@@ -152,13 +152,15 @@ class Model {
               decided by its <code>type</code>. See the Data Types page.
             </p>
             <p className="text-muted-foreground mt-2">
-              Not every option reaches DDL. Only <code>name</code>,{" "}
+              Not every option reaches DDL. <code>name</code>,{" "}
               <code>type</code>, <code>required</code>, <code>unique</code>,{" "}
-              <code>defaultValue</code>, <code>defaultExpression</code> and{" "}
-              <code>index</code> are used when generating{" "}
-              <code>CREATE TABLE</code>; <code>length</code>,{" "}
-              <code>precision</code> and <code>scale</code> are accepted but the
-              SQL type is chosen from <code>type</code> alone.
+              <code>defaultValue</code>, <code>defaultExpression</code>,{" "}
+              <code>index</code>, <code>length</code>, <code>precision</code>{" "}
+              and <code>scale</code> are used when generating{" "}
+              <code>CREATE TABLE</code>. The last three also bound the value on
+              write, so they are enforced even on dialects whose DDL cannot
+              express them — Postgres and SQLite, which get <code>TEXT</code>{" "}
+              and <code>NUMERIC</code> respectively.
             </p>
           </Card>
 

@@ -265,9 +265,15 @@ await userRepo.create({ id: "550e8400-e29b-41d4-a716-446655440000", email: "a@b.
           <h2 className="text-2xl font-semibold mb-4">Type Mapping</h2>
           <p className="text-muted-foreground mb-4">
             Every <code>DataTypes</code> member maps to a Postgres type. Note{" "}
-            <code>JSONB</code> for JSON, <code>BYTEA</code> for blobs, and a
-            bare <code>DECIMAL</code> with no precision pinned — MySQL is the
-            dialect that spells out <code>DECIMAL(10,2)</code>.
+            <code>JSONB</code> for JSON, <code>BYTEA</code> for blobs, and{" "}
+            <code>DECIMAL(10,2)</code> as the default — a bare Postgres{" "}
+            <code>DECIMAL</code> stores whatever it is handed, so the
+            constrained form is emitted instead. Declare <code>precision</code>{" "}
+            and <code>scale</code> to size it yourself. <code>STRING</code> is{" "}
+            <code>TEXT</code> here, with no width to declare: Postgres treats{" "}
+            <code>TEXT</code> and <code>VARCHAR(n)</code> identically, so a{" "}
+            <code>length</code> is enforced by the ORM rather than written into
+            the DDL.
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
@@ -287,7 +293,7 @@ await userRepo.create({ id: "550e8400-e29b-41d4-a716-446655440000", email: "a@b.
                   ["BIGINT", "BIGINT"],
                   ["FLOAT", "REAL"],
                   ["DOUBLE", "DOUBLE PRECISION"],
-                  ["DECIMAL", "DECIMAL"],
+                  ["DECIMAL", "DECIMAL(10,2)"],
                   ["BOOLEAN", "BOOLEAN"],
                   ["DATE", "DATE"],
                   ["DATETIME", "TIMESTAMP"],
@@ -308,10 +314,13 @@ await userRepo.create({ id: "550e8400-e29b-41d4-a716-446655440000", email: "a@b.
             </table>
           </div>
           <p className="text-muted-foreground mt-4">
-            A declared <code>length</code> is not read by the mapper:{" "}
+            A declared <code>length</code> never reaches the DDL:{" "}
             <code>STRING</code> is <code>TEXT</code> here whatever length you
-            ask for. <code>BOOLEAN</code> is a real type on Postgres, which is
-            why the generated toggle is <code>SET col = NOT col</code>.
+            ask for, because Postgres treats <code>TEXT</code> and{" "}
+            <code>VARCHAR(n)</code> as the same type. The limit is enforced by
+            the ORM on write instead, so <code>length: 50</code> still rejects a
+            60-character value. <code>BOOLEAN</code> is a real type on Postgres,
+            which is why the generated toggle is <code>SET col = NOT col</code>.
           </p>
         </section>
 

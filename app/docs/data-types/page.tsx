@@ -16,7 +16,7 @@ const rows: [string, string, string, string, string, string][] = [
   ],
   [
     "DECIMAL",
-    "DECIMAL",
+    "DECIMAL(10,2)",
     "DECIMAL(10,2)",
     "NUMERIC",
     "DECIMAL(10,2)",
@@ -67,7 +67,14 @@ DataTypes.BLOB
         <section>
           <h2 className="text-2xl font-semibold mb-4">The Mapping</h2>
           <p className="text-muted-foreground mb-4">
-            What each member becomes per backend:
+            What each member becomes per backend. The widths shown are the
+            defaults — <code>length</code> widens <code>STRING</code>, and{" "}
+            <code>precision</code> with <code>scale</code> sizes{" "}
+            <code>DECIMAL</code>. See{" "}
+            <a className="underline" href="#length-precision-and-scale">
+              below
+            </a>
+            :
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
@@ -126,52 +133,88 @@ DataTypes.BLOB
           </p>
         </section>
 
-        <section>
+        <section id="length-precision-and-scale">
           <h2 className="text-2xl font-semibold mb-4">
             <code>length</code>, <code>precision</code> and{" "}
-            <code>scale</code> Do Nothing
+            <code>scale</code>
           </h2>
-          <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5 mb-4">
-            <p className="text-sm font-semibold mb-2">
-              Three declared options are never read
-            </p>
-            <p className="text-sm text-muted-foreground mb-3">
-              <code>ColumnConfig</code> accepts <code>length</code>,{" "}
-              <code>precision</code> and <code>scale</code>, and the library
-              never consults any of them — not when generating the table, and not
-              when validating a value. The SQL type comes from the{" "}
-              <code>DataTypes</code> member alone. So{" "}
-              <code>{"{ type: DataTypes.STRING, length: 50 }"}</code> still
-              creates a <code>VARCHAR(255)</code> on MySQL, and a 200-character
-              string written to it is stored without complaint.
-            </p>
-            <CodeBlock
-              language="typescript"
-              code={`const Post = defineModel({
+          <p className="text-muted-foreground mb-4">
+            These three options shape the emitted type, and the value written to
+            it is checked against the same limit. Declaring{" "}
+            <code>{"{ type: DataTypes.STRING, length: 50 }"}</code> produces{" "}
+            <code>VARCHAR(50)</code> on MySQL, and a 60-character string is
+            rejected rather than stored.
+          </p>
+          <CodeBlock
+            language="typescript"
+            code={`const Post = defineModel({
   tableName: "posts",
   columns: {
     id: { type: DataTypes.STRING, required: true, unique: true },
-    title: { type: DataTypes.STRING, length: 5 },   // length is ignored
+    title: { type: DataTypes.STRING, length: 5 },
+    price: { type: DataTypes.DECIMAL, precision: 12, scale: 4 },
   },
 });
 
-// Emitted DDL: title TEXT (Postgres) / VARCHAR(255) (MySQL) -- not (5).
+// Emitted DDL
+//   MySQL     title VARCHAR(5)             price DECIMAL(12,4)
+//   MSSQL     title NVARCHAR(5)            price DECIMAL(12,4)
+//   Postgres  title TEXT                   price DECIMAL(12,4)
+//   SQLite    title TEXT                   price NUMERIC
 
-// And no error on write:
-await postRepo.create({ id: "p1", title: "a great deal longer than five" });`}
-            />
-            <p className="text-sm text-muted-foreground mt-3">
-              If you need a real limit, <code>maxLength</code> is enforced by the
-              ORM&apos;s validation, and <code>minLength</code>,{" "}
-              <code>pattern</code> and <code>customValidator</code> work the same
-              way — those are checked by the library rather than by the database.
-              See{" "}
-              <a className="underline" href="/docs/validation">
-                Validation
-              </a>
-              . The difference matters: <code>length</code> is a no-op you might
-              reasonably assume is a constraint, while <code>maxLength</code>{" "}
-              actually rejects.
+// And a value over the limit is rejected:
+await postRepo.create({ id: "p1", title: "a great deal longer than five" });
+// StabilizeError: Field title too long   (code: VALIDATION_ERROR)`}
+          />
+          <p className="text-muted-foreground mt-4">
+            Postgres and SQLite have no width to write. <code>TEXT</code> and{" "}
+            <code>VARCHAR(n)</code> are the same type in Postgres with no
+            performance difference, and SQLite&apos;s <code>NUMERIC</code> keeps
+            no scale — so emitting a width there would claim a constraint the
+            server does not enforce. The limit is applied in process instead, so
+            the rule holds on every dialect even where the DDL cannot express it.
+          </p>
+
+          <h3 className="text-lg font-semibold mb-2 mt-6">
+            length and maxLength together
+          </h3>
+          <p className="text-muted-foreground mb-4">
+            Each keeps the meaning it already had, which matters for models
+            written before any of this was enforced:
+          </p>
+          <ul className="list-disc list-inside text-muted-foreground space-y-2 mb-4">
+            <li>
+              <code>length</code> alone is both the column width and the
+              validation limit.
+            </li>
+            <li>
+              <code>maxLength</code> alone stays validation-only. It changes no
+              DDL, exactly as before.
+            </li>
+            <li>
+              Given both, <code>length</code> sets the column width and{" "}
+              <code>maxLength</code> is what a value is checked against.
+            </li>
+          </ul>
+          <p className="text-muted-foreground">
+            <code>minLength</code>, <code>pattern</code> and{" "}
+            <code>customValidator</code> are unaffected and remain checked by the
+            library rather than by the database. See{" "}
+            <a className="underline" href="/docs/validation">
+              Validation
+            </a>
+            .
+          </p>
+          <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5 mt-4">
+            <p className="text-sm font-semibold mb-2">
+              Writing what you already store
+            </p>
+            <p className="text-sm text-muted-foreground">
+              A column narrower than its widest existing value now rejects what
+              used to be accepted. If you are adding <code>length</code> to a
+              table that already holds longer values, widen the column rather
+              than assuming the check is advisory — and expect a write that
+              previously succeeded to fail once the limit is enforced.
             </p>
           </div>
         </section>
@@ -191,12 +234,14 @@ await postRepo.create({ id: "p1", title: "a great deal longer than five" });`}
           <p className="text-muted-foreground mb-4">
             <code>DataTypes.STRING</code> becomes <code>TEXT</code> on Postgres
             and SQLite — no length limit at all — but <code>VARCHAR(255)</code>{" "}
-            on MySQL and <code>NVARCHAR(255)</code> on SQL Server. Since{" "}
-            <code>length</code> is ignored, declaring{" "}
-            <code>length: 1000</code> does not widen it. A value that fits
-            comfortably on Postgres is silently truncated at 255 characters on
-            MySQL, or rejected outright on SQL Server, depending on the server
-            mode. Use <code>DataTypes.TEXT</code> when the value might be long.
+            on MySQL and <code>NVARCHAR(255)</code> on SQL Server. That 255 is
+            the default, not a ceiling: declaring <code>length: 1000</code>{" "}
+            widens the column to <code>VARCHAR(1000)</code> and the value is
+            checked against 1000. Leave <code>length</code> off and the 255
+            stands, so a value that fits comfortably on Postgres is truncated at
+            255 characters on MySQL, or rejected outright on SQL Server,
+            depending on the server mode. Use <code>DataTypes.TEXT</code> when
+            the value might be long, or name the width you need.
           </p>
 
           <h3 className="text-lg font-semibold mb-2 mt-6">
@@ -213,18 +258,18 @@ await postRepo.create({ id: "p1", title: "a great deal longer than five" });`}
           </p>
 
           <h3 className="text-lg font-semibold mb-2 mt-6">
-            DECIMAL is fixed at 10,2 on two dialects
+            DECIMAL defaults to 10,2 everywhere
           </h3>
           <p className="text-muted-foreground mb-4">
             <code>DataTypes.DECIMAL</code> becomes{" "}
-            <code>DECIMAL(10,2)</code> on MySQL and SQL Server — a hardcoded
-            ten-digit precision with two decimal places — while Postgres and
-            SQLite get an unqualified <code>DECIMAL</code> /{" "}
-            <code>NUMERIC</code> that the server sizes itself. Since{" "}
-            <code>precision</code> and <code>scale</code> are ignored, you cannot
-            widen the MySQL or SQL Server column from the model; a value needing
-            more than 10 significant digits will not fit there while it fits
-            fine on Postgres.
+            <code>DECIMAL(10,2)</code> on MySQL, SQL Server and Postgres — ten
+            digits with two decimal places — and <code>NUMERIC</code> on SQLite,
+            which is dynamically typed and keeps no scale. Declare{" "}
+            <code>precision</code> and <code>scale</code> to size it yourself;
+            without them the 10,2 default stands, and a value needing more than
+            10 significant digits will not fit. On SQLite the declared precision
+            and scale are enforced by the ORM instead, since the column itself
+            will not.
           </p>
 
           <h3 className="text-lg font-semibold mb-2 mt-6">
@@ -469,12 +514,13 @@ MongoDB       _id string, caller-supplied`}
           <p className="text-muted-foreground mb-4">
             An <code>encrypted: true</code> column stores Base64 ciphertext, so
             the string it holds is longer than the plaintext — roughly 1.4× plus
-            about 40 characters. Since <code>length</code> is ignored, size the
-            column with the <code>DataTypes</code> member instead: on MySQL and
-            SQL Server, <code>STRING</code> gives you only{" "}
-            <code>VARCHAR(255)</code> / <code>NVARCHAR(255)</code>, which a
-            moderately long secret will overflow. Use{" "}
-            <code>DataTypes.TEXT</code>. See{" "}
+            about 55 characters of framing. A default{" "}
+            <code>STRING</code> leaves you <code>VARCHAR(255)</code> /{" "}
+            <code>NVARCHAR(255)</code> on MySQL and SQL Server, which a
+            moderately long secret will overflow; you can widen it with{" "}
+            <code>length</code>, but <code>DataTypes.TEXT</code> is the better
+            answer because the ciphertext cannot be sized from the plaintext you
+            have in mind. See{" "}
             <a className="underline" href="/docs/encryption">
               Column Encryption
             </a>

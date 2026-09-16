@@ -24,7 +24,8 @@ export default function StabilizeApiPage() {
   config: DBConfig,
   cacheConfig: CacheConfig = { enabled: false, ttl: 60 },
   loggerConfig: LoggerConfig = {},
-  existingClient?: DBClient
+  existingClient?: DBClient,
+  events?: StabilizeEmitter
 )`}
               />
               <h3 className="font-semibold mb-2">Parameters:</h3>
@@ -44,7 +45,9 @@ export default function StabilizeApiPage() {
                   <span className="text-muted-foreground">
                     Cache configuration. Defaults to{" "}
                     <code>{`{ enabled: false, ttl: 60 }`}</code> — caching is off
-                    unless you turn it on.
+                    unless you turn it on. <code>redisUrl</code> selects the
+                    backend: with it entries go to Redis, without it they are
+                    held in this process.
                   </span>
                 </li>
                 <li>
@@ -64,6 +67,18 @@ export default function StabilizeApiPage() {
                     opening a new connection. When one is supplied, the cache is
                     not created and no <code>connection:open</code> event is
                     emitted for it.
+                  </span>
+                </li>
+                <li>
+                  <Badge variant="outline" className="mr-2">
+                    events
+                  </Badge>{" "}
+                  <span className="text-muted-foreground">
+                    An emitter to use instead of one of its own. Supply it when
+                    you need to hear <code>connection:open</code>: that event
+                    fires from the constructor, before a handler registered on{" "}
+                    <code>orm.events</code> afterwards could exist. Build the
+                    emitter, subscribe, then pass it.
                   </span>
                 </li>
               </ul>
@@ -183,13 +198,23 @@ const user = await userRepo.findOne(1);`}
                 code={`async getCacheStats(): Promise<CacheStats>`}
               />
               <p className="text-muted-foreground mb-4">
-                Returns cache hit/miss statistics.
+                Returns cache hit/miss statistics, and which store answered —
+                so a cache that is doing nothing is distinguishable from one
+                that is merely cold.
               </p>
               <CodeBlock
                 language="typescript"
                 code={`const stats = await orm.getCacheStats();
-console.log(\`Hits: \${stats.hits}, Misses: \${stats.misses}, Keys: \${stats.keys}\`);`}
+console.log(\`Hits: \${stats.hits}, Misses: \${stats.misses}, Keys: \${stats.keys}\`);
+console.log(\`Backend: \${stats.backend}\`); // "redis" | "memory" | "disabled"`}
               />
+              <p className="text-muted-foreground mt-4">
+                <code>backend</code> reports the configuration, not the
+                connection: <code>&quot;redis&quot;</code> means a client was
+                built, and <code>ioredis</code> connects lazily, so a later
+                connection failure shows up in <code>healthCheck()</code> rather
+                than here.
+              </p>
             </Card>
 
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">
@@ -199,13 +224,39 @@ console.log(\`Hits: \${stats.hits}, Misses: \${stats.misses}, Keys: \${stats.key
                 code={`async healthCheck(): Promise<{ status: string; database: string; latencyMs: number; cacheStatus: string }>`}
               />
               <p className="text-muted-foreground mb-4">
-                Checks database and cache connectivity with latency.
+                Checks database and cache connectivity with latency. On MongoDB
+                the liveness check is <code>ping</code> rather than{" "}
+                <code>SELECT 1</code>, and both are wrapped the same way so an
+                unreachable server lands in the same shape.
               </p>
               <CodeBlock
                 language="typescript"
                 code={`const health = await orm.healthCheck();
 // { status: "healthy", database: "sqlite", latencyMs: 0.5, cacheStatus: "disabled" }`}
               />
+              <p className="text-muted-foreground mt-4 mb-2">
+                <code>cacheStatus</code> names the backend rather than reducing
+                it to connected-or-not, because an in-process cache has no
+                connection to report:
+              </p>
+              <ul className="list-disc list-inside text-muted-foreground space-y-1">
+                <li>
+                  <code>&quot;disabled&quot;</code> — <code>enabled</code> was
+                  false.
+                </li>
+                <li>
+                  <code>&quot;in-memory&quot;</code> — no <code>redisUrl</code>,
+                  so the cache is confined to this process.
+                </li>
+                <li>
+                  <code>&quot;connected&quot;</code> /{" "}
+                  <code>&quot;connected (miss)&quot;</code> — a Redis client was
+                  built and the round trip did or did not find its probe key.
+                </li>
+                <li>
+                  <code>&quot;unknown&quot;</code> — the check threw.
+                </li>
+              </ul>
             </Card>
 
             <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6">

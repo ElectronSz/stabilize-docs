@@ -70,7 +70,7 @@ const groups = [
       {
         icon: Terminal,
         title: "CLI (31 commands)",
-        desc: "Generate models, migrations, seeds, APIs.",
+        desc: "Generate models, migrations, seeds and APIs, on SQL or MongoDB.",
       },
       {
         icon: HardDrive,
@@ -85,7 +85,7 @@ const groups = [
       {
         icon: BarChart3,
         title: "Caching Layer",
-        desc: "Redis cache-aside and write-through strategies.",
+        desc: "Cache-aside and write-through, on Redis or in process.",
       },
     ],
   },

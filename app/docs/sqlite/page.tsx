@@ -252,7 +252,9 @@ LIMIT 25 OFFSET 25`}
             boolean column is an <code>INTEGER</code>, so the generated toggle
             is a <code>CASE</code> expression rather than the{" "}
             <code>NOT col</code> Postgres and MySQL accept. A declared{" "}
-            <code>length</code> is not read by the mapper at all.
+            <code>length</code> never reaches the DDL — SQLite&apos;s declared
+            type decides type affinity rather than constraining the value — so
+            the limit is enforced by the ORM on write instead.
           </p>
         </section>
 
@@ -341,17 +343,12 @@ CREATE TABLE IF NOT EXISTS "accounts" ("id" TEXT NOT NULL PRIMARY KEY, "email" T
           <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 p-5">
             <ul className="text-sm text-muted-foreground space-y-3 list-disc list-inside">
               <li>
-                <strong>A JSON object cannot be written as an object.</strong>{" "}
-                The SQLite write path binds the value as it was given, while the
-                MySQL and SQL Server paths encode it explicitly. An object
-                therefore reaches <code>bun:sqlite</code> unencoded and the
-                driver, which accepts only strings, numbers, bigints, booleans,
-                null and typed arrays, fails the whole statement with{" "}
-                <em>
-                  Binding expected string, TypedArray, boolean, number, bigint or
-                  null
-                </em>
-                . Pass a pre-stringified value on a model that targets SQLite.
+                <strong>JSON is stored as text, not parsed back.</strong> A
+                model with a <code>DataTypes.JSON</code> column writes an object
+                or array and reads a string, matching SQL Server and MariaDB.
+                Postgres and MySQL parse the column on load, so the same model
+                returns an object there — a difference to plan for if you target
+                both. Nothing needs pre-stringifying.
               </li>
               <li>
                 <strong>No row locking.</strong> SQLite has no{" "}

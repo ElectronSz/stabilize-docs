@@ -59,7 +59,7 @@ DataTypes.BLOB       // BLOB - binary data`}
                     ["BIGINT", "BIGINT", "BIGINT", "INTEGER", "BIGINT"],
                     ["FLOAT", "REAL", "FLOAT", "REAL", "REAL"],
                     ["DOUBLE", "DOUBLE PRECISION", "DOUBLE", "REAL", "FLOAT"],
-                    ["DECIMAL", "DECIMAL", "DECIMAL(10,2)", "NUMERIC", "DECIMAL(10,2)"],
+                    ["DECIMAL", "DECIMAL(10,2)", "DECIMAL(10,2)", "NUMERIC", "DECIMAL(10,2)"],
                     ["BOOLEAN", "BOOLEAN", "TINYINT(1)", "INTEGER", "BIT"],
                     ["DATE", "DATE", "DATE", "TEXT", "DATE"],
                     ["DATETIME", "TIMESTAMP", "DATETIME", "TEXT", "DATETIME2"],
@@ -97,7 +97,10 @@ DataTypes.BLOB       // BLOB - binary data`}
                   <code>TEXT</code> rather than a length-capped{" "}
                   <code>VARCHAR</code> — the{" "}
                   <code className="text-accent">length</code> option does not
-                  produce a PostgreSQL length constraint.
+                  produce a PostgreSQL length constraint, because Postgres treats{" "}
+                  <code>TEXT</code> and <code>VARCHAR(n)</code> as the same type.
+                  It is still enforced: the value is checked against the declared
+                  length on write.
                 </p>
                 <CodeBlock
                   code={`{ type: DataTypes.STRING, length: 255 }`}
@@ -189,7 +192,7 @@ DataTypes.BLOB       // BLOB - binary data`}
                     DataTypes.DECIMAL
                   </Badge>
                   <span className="text-sm text-muted-foreground">
-                    → DECIMAL / DECIMAL(10,2) / NUMERIC
+                    → DECIMAL(10,2) / NUMERIC
                   </span>
                 </div>
                 <p className="text-sm text-muted-foreground mb-2">

@@ -130,7 +130,7 @@ export default function CLIPage() {
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 mb-4">
             <Terminal className="h-3.5 w-3.5 text-accent" />
-            <span className="text-sm font-medium text-accent">v2.2.1</span>
+            <span className="text-sm font-medium text-accent">v3.0.0</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
             CLI Reference
@@ -143,8 +143,54 @@ export default function CLIPage() {
 
         <TerminalBlock title="install">
           <Prompt cmd="bun add -g stabilize-cli" />
-          <Out color="text-[#28c840]">✔ installed stabilize-cli@2.2.1</Out>
+          <Out color="text-[#28c840]">✔ installed stabilize-cli@3.0.0</Out>
         </TerminalBlock>
+
+        <p className="text-sm text-muted-foreground mb-8">
+          The CLI is versioned independently of the ORM. This release bundles{" "}
+          <code>stabilize-orm@3.x</code> and requires it — a project still on 2.x
+          is told to upgrade rather than failing from inside the bundle.
+        </p>
+
+        <div className="rounded-xl border border-border/40 bg-card/40 p-5 mb-10">
+          <h3 className="font-semibold mb-2">MongoDB</h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            Every command below works against a document backend as well, with
+            one exception noted at the end. Where a command says
+            &ldquo;table&rdquo;, MongoDB has a collection; where it says
+            &ldquo;row&rdquo;, there is a document. Concretely:
+          </p>
+          <ul className="text-sm text-muted-foreground space-y-1.5 list-disc list-inside">
+            <li>
+              <code>db:tables</code>, <code>db:table:info</code>,{" "}
+              <code>db:size</code> and <code>db:diff</code> list and describe
+              collections rather than tables.
+            </li>
+            <li>
+              <code>db:truncate</code>, <code>db:drop</code> and{" "}
+              <code>db:reset</code> clear collections; <code>db:backup</code>{" "}
+              and <code>db:restore</code> round-trip documents, preserving{" "}
+              <code>_id</code> and real <code>Date</code> values.
+            </li>
+            <li>
+              <code>db:console</code> becomes a document console: it takes{" "}
+              <code>collections</code>, <code>find &lt;collection&gt; [filter]</code>{" "}
+              and any JSON command document.
+            </li>
+            <li>
+              <code>status</code>, <code>migrate:status</code>,{" "}
+              <code>migrate:pending</code>, seeding and <code>migrate:auto</code>{" "}
+              report and act on collections.
+            </li>
+            <li>
+              <code>query</code> is the exception. MongoDB has no SQL to run, so
+              it says so and points you at <code>db:tables</code>,{" "}
+              <code>db:table:info</code> and <code>db:console</code> rather than
+              failing with <code>MONGO_UNSUPPORTED</code> after you have already
+              written the statement.
+            </li>
+          </ul>
+        </div>
 
         <div className="mb-8">
           <h3 className="font-semibold mb-2">Shorthand Aliases</h3>
@@ -371,7 +417,7 @@ export default function CLIPage() {
           />
           <Cmd
             name="query <sql>"
-            desc="Execute a raw SQL query and display results in a table."
+            desc={'Execute a raw query and display the results. On MongoDB the argument is a document command, such as {"find": "users"}.'}
             flags={["-c, --config <path>", "-p, --params"]}
             example="stabilize-cli query 'SELECT * FROM users LIMIT 5'"
           />

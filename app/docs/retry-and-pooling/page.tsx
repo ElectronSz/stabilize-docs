@@ -110,9 +110,9 @@ const noRetry = new Stabilize({
                 code={`const health = await orm.healthCheck();
 // {
 //   status: "healthy" | "unhealthy",
-//   database: "sqlite" | "postgres" | "mysql" | "mssql",
+//   database: "sqlite" | "postgres" | "mysql" | "mssql" | "mongodb",
 //   latencyMs: 0.42,
-//   cacheStatus: "connected" | "connected (miss)" | "disabled" | "unknown"
+//   cacheStatus: "disabled" | "in-memory" | "connected" | "connected (miss)" | "unknown"
 // }
 
 const userHealth = await userRepo.healthCheck();

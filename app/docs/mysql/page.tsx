@@ -287,8 +287,13 @@ LIMIT 25 OFFSET 25`}
           <p className="text-muted-foreground mb-4">
             Every <code>DataTypes</code> member maps to a MySQL type. Note the
             unpinned precision on <code>FLOAT</code> and <code>DOUBLE</code>,{" "}
-            the pinned <code>DECIMAL(10,2)</code>, and that neither{" "}
-            <code>BOOLEAN</code> nor <code>UUID</code> is a real type here.
+            the default <code>DECIMAL(10,2)</code>, and that neither{" "}
+            <code>BOOLEAN</code> nor <code>UUID</code> is a real type here. The
+            widths shown are the defaults: <code>length</code> widens{" "}
+            <code>STRING</code>, <code>precision</code> and <code>scale</code>{" "}
+            size <code>DECIMAL</code>, and on <code>FLOAT</code> — the one
+            dialect where a single-precision column takes a bit width —{" "}
+            <code>precision</code> gives you <code>FLOAT(n)</code>.
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">

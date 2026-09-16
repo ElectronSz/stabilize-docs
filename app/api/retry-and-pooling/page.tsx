@@ -199,11 +199,16 @@ console.log(stats.active, stats.idle, stats.total);`}
               <p className="text-muted-foreground mb-4">
                 <code>status</code> is <code>&quot;healthy&quot;</code> or{" "}
                 <code>&quot;unhealthy&quot;</code>. <code>database</code> is the{" "}
-                <code>DBType</code>. <code>cacheStatus</code> is one of{" "}
-                <code>&quot;connected&quot;</code>,{" "}
-                <code>&quot;connected (miss)&quot;</code>,{" "}
-                <code>&quot;disabled&quot;</code> or{" "}
-                <code>&quot;unknown&quot;</code>.
+                <code>DBType</code>. <code>cacheStatus</code> names the backend
+                rather than reducing it to connected-or-not:{" "}
+                <code>&quot;disabled&quot;</code> when{" "}
+                <code>enabled</code> was false,{" "}
+                <code>&quot;in-memory&quot;</code> when there is no{" "}
+                <code>redisUrl</code> and the cache is confined to this process,{" "}
+                <code>&quot;connected&quot;</code> or{" "}
+                <code>&quot;connected (miss)&quot;</code> for a Redis client that
+                did or did not find its probe key, and{" "}
+                <code>&quot;unknown&quot;</code> when the check threw.
               </p>
               <CodeBlock
                 filename="example/health-orm.ts"

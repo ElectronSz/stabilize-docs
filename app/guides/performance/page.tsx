@@ -443,7 +443,11 @@ const emails = await userRepo.pluck("email");`}
                 Index the columns you filter, join and sort on; run{" "}
                 <code>autoMigrate()</code> to create them
               </li>
-              <li>Enable Redis caching for read-heavy workloads</li>
+              <li>
+                Enable caching for read-heavy workloads — Redis when{" "}
+                <code>redisUrl</code> is set, otherwise the in-process backend,
+                which is per-process and lost on restart
+              </li>
               <li>
                 Use <code>bulkCreate()</code> for multiple inserts
               </li>

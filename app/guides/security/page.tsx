@@ -171,8 +171,9 @@ const userPosts = await postRepo.scope("ownedBy", currentUserId).execute(orm.cli
             <p className="text-muted-foreground mb-4">
               A column marked <code>encrypted: true</code> is encrypted on the
               way in and decrypted on the way out, transparently, by the
-              repository. Mark the column and set the key — nothing else in your
-              code changes:
+              repository. Mark the column and supply a key — or let the ORM
+              generate and store one for you — and nothing else in your code
+              changes:
             </p>
             <CodeBlock
               filename="models/User.ts"
@@ -193,33 +194,46 @@ console.log(user.ssn); // the original value`}
             />
             <CodeBlock
               filename=".env"
-              code={`# 64 hex characters (32 bytes), or a 32-byte utf8 string
+              code={`# 64 hex characters (32 bytes), or a 32-byte utf8 string.
+# Omit it entirely and the ORM generates one into .stabilize/encryption.key.
 ORM_ENCRYPTION_KEY=9f2c1d7a4b8e35061c9a7d2f4e8b1a3c5d7f9b2e4a6c8d0f1b3e5a7c9d1f3b5e`}
             />
             <p className="text-muted-foreground my-4">
               Encryption is AES-256-GCM. Each value is written as{" "}
-              <code>v2:&lt;iv&gt;:&lt;auth tag&gt;:&lt;ciphertext&gt;</code>{" "}
+              <code>
+                v3:&lt;keyId&gt;:&lt;iv&gt;:&lt;auth tag&gt;:&lt;ciphertext&gt;
+              </code>{" "}
               with a fresh random IV, all Base64 — the authentication tag means
               a value that was truncated or tampered with fails to decrypt
-              rather than silently returning corrupted plaintext. Older rows
-              written in the pre-<code>v2</code> CBC format are still readable,
-              though nothing writes that format any more.
+              rather than silently returning corrupted plaintext. The{" "}
+              <code>keyId</code> is a digest of the key, not a label someone
+              assigned, so a value names which key wrote it and a key that moves
+              between the environment and the key file keeps its identity. Older
+              rows in the <code>v2</code> and pre-<code>v2</code> CBC formats are
+              still readable, though nothing writes them any more.
             </p>
             <div className="rounded-xl border border-accent/30 bg-accent/5 p-5 mt-4">
               <p className="text-sm font-semibold mb-2">
-                The key is required, and the legacy key is published
+                A key is found, or generated — never silently absent
               </p>
               <p className="text-sm text-muted-foreground">
-                <code>ORM_ENCRYPTION_KEY</code> has no default. It is read on
-                every encrypt and decrypt, so setting it after importing the ORM
-                still works — but a missing or wrong-length key throws rather
-                than falling back to something. The key this library used to
-                hard-code (<code>f71a3c8e9b12d5a49c0a3f98b1f2e46d</code>) is
-                therefore public knowledge. Rows written by an older version
-                were encrypted with it and offer no real confidentiality: set{" "}
-                <code>ORM_ENCRYPTION_KEY</code> to that value to keep reading
-                them, re-save the rows under a key of your own, then drop it.
-                There is no automatic re-encryption tool.
+                The key is looked for in <code>ORM_ENCRYPTION_KEY</code>, then in
+                a key file (<code>ORM_ENCRYPTION_KEY_FILE</code>, default{" "}
+                <code>.stabilize/encryption.key</code>). If neither is present
+                one is <strong>generated</strong> and written to that file before
+                it is used, with a warning — a key held only in memory would
+                orphan every value it encrypted at the next restart. The
+                generated file is only as durable as the filesystem it lands in,
+                so treat it as a secret and keep it out of version control.
+                Rotating later is supported: list the old key in{" "}
+                <code>ORM_ENCRYPTION_KEYS_OLD</code> or the file&apos;s{" "}
+                <code>retired</code> list and it still decrypts while the new one
+                writes. The key this library used to hard-code (
+                <code>f71a3c8e9b12d5a49c0a3f98b1f2e46d</code>) is therefore
+                public knowledge; rows written by an older version were encrypted
+                with it and offer no real confidentiality, so set that value to
+                keep reading them, re-save the rows under a key of your own, then
+                drop it. There is no automatic re-encryption tool.
               </p>
             </div>
             <p className="text-muted-foreground my-4">
@@ -389,21 +403,27 @@ export const orm = new Stabilize(dbConfig, { enabled: false, ttl: 60 }, loggerCo
             />
             <div className="rounded-xl border border-accent/30 bg-accent/5 p-5 mt-4">
               <p className="text-sm font-semibold mb-2">
-                Only two events actually fire
+                All nine events fire, but one fires too early to hear
               </p>
               <p className="text-sm text-muted-foreground">
                 <code>orm.events</code> is a{" "}
                 <code>StabilizeEmitter</code> with{" "}
                 <code>on()</code>, <code>off()</code> and <code>emit()</code>.
-                Its <code>StabilizeEvent</code> type declares nine names, but
-                only <code>connection:open</code> and{" "}
-                <code>connection:close</code> are emitted anywhere in the
-                library today. A handler registered for{" "}
-                <code>query</code>, <code>error</code>, the{" "}
-                <code>migration:*</code> names or the{" "}
-                <code>transaction:*</code> names will never be called — do not
-                build an audit trail on them. Use hooks (above) for row changes
-                and the logger for statement-level visibility.
+                All nine declared names are emitted: <code>query</code>,{" "}
+                <code>error</code>, <code>connection:open</code>,{" "}
+                <code>connection:close</code>, the two{" "}
+                <code>migration:*</code> names and the three{" "}
+                <code>transaction:*</code> names. The one that will not reach a
+                handler registered on <code>orm.events</code> is{" "}
+                <code>connection:open</code>: it fires from the constructor,
+                before your code runs, so pass your own emitter as the fifth
+                constructor argument if you need it. Everything else can be
+                subscribed to normally, and an audit trail built on them is
+                sound. See{" "}
+                <a className="underline" href="/docs/events">
+                  Events
+                </a>
+                .
               </p>
             </div>
             <p className="text-muted-foreground my-4">
@@ -450,9 +470,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app_user;
               </li>
               <li>Implement row-level security checks</li>
               <li>
-                Use <code>encrypted: true</code> for sensitive fields, and set{" "}
-                <code>ORM_ENCRYPTION_KEY</code> — never rely on the published
-                legacy key
+                Use <code>encrypted: true</code> for sensitive fields, and supply
+                the key yourself — <code>ORM_ENCRYPTION_KEY</code> or a key file
+                — rather than letting one be generated, and never rely on the
+                published legacy key
               </li>
               <li>Hash passwords with a slow, salted algorithm</li>
               <li>Enable optimistic locking for concurrent writes</li>
