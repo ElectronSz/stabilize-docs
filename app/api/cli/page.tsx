@@ -69,15 +69,20 @@ export default function CliApiPage() {
       <div className="mx-auto max-w-4xl">
         <h1 className="text-4xl font-bold mb-2">CLI Commands</h1>
         <p className="text-lg text-muted-foreground mb-8">
-          Stabilize CLI v3.1.0 — 31 commands with shorthand aliases
+          Stabilize CLI v3.2.0 — 31 commands with shorthand aliases
         </p>
         <p className="text-sm text-muted-foreground mb-8">
           The CLI is versioned independently of the ORM: this is the version of
           the <code>stabilize-cli</code> package, which is not the same number as
           the <code>stabilize-orm</code> release it depends on. This release
-          bundles <code>stabilize-orm@3.x</code> and adds MongoDB support to every
-          command that touches the database, except <code>query</code> — a
-          document command is not a string, so there is nothing for it to run.
+          bundles <code>stabilize-orm@3.2.x</code> and runs on Node.js 22.18+ as
+          well as Bun — one bundle, with the SQLite driver chosen at run time.
+          Under Node your project needs{" "}
+          <code>&quot;type&quot;: &quot;module&quot;</code>, because the CLI
+          imports your <code>.ts</code> files directly and Node would otherwise
+          treat them as CommonJS. Every command works against MongoDB as well,
+          with the single exception of <code>query</code> — a document command is
+          not a string, so there is nothing for it to run.
         </p>
 
         <Section icon={FileCode2} label="Generate">
