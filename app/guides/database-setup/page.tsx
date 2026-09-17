@@ -152,9 +152,10 @@ export const orm = new Stabilize(dbConfig, { enabled: false, ttl: 60 });`}
                   1. No Installation Required
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  SQLite is embedded. Stabilize uses{" "}
-                  <code>bun:sqlite</code>, so there is no server to install,
-                  start or connect to.
+                  SQLite is embedded. Stabilize uses the SQLite driver that
+                  ships with your runtime — <code>bun:sqlite</code> on Bun,{" "}
+                  <code>node:sqlite</code> on Node.js — so there is no server to
+                  install, start or connect to.
                 </p>
               </div>
 

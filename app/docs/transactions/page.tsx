@@ -139,8 +139,9 @@ await orm.transaction(async (txClient) => {
                     <tr className="border-b border-accent/10">
                       <td className="py-2 pr-4">SQLite</td>
                       <td className="py-2">
-                        The single shared <code>bun:sqlite</code> connection, with
-                        <code> BEGIN</code> / <code>COMMIT</code>
+                        The single shared SQLite connection (
+                        <code>bun:sqlite</code> or <code>node:sqlite</code>),
+                        with <code>BEGIN</code> / <code>COMMIT</code>
                       </td>
                     </tr>
                     <tr className="border-b border-accent/10">

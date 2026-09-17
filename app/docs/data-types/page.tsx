@@ -416,9 +416,10 @@ await postRepo.create({ id: "p1", title: "a great deal longer than five" });
             <p className="text-sm text-muted-foreground mb-3">
               The ORM encodes a plain object to JSON text on the MySQL and SQL
               Server paths. The SQLite path applies no such encoding — the value
-              is handed to <code>bun:sqlite</code> as-is, and the driver accepts
-              only strings, numbers, bigints, booleans, <code>null</code> and
-              typed arrays. Writing an object there fails the whole statement:
+              is handed to the driver as-is, and the built-in SQLite drivers
+              accept only strings, numbers, bigints, booleans, <code>null</code>{" "}
+              and typed arrays. Writing an object there fails the whole
+              statement, on either runtime:
             </p>
             <CodeBlock
               language="typescript"

@@ -20,9 +20,9 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Stabilize ORM - Modern Type-Safe ORM for Bun",
+  title: "Stabilize ORM - Modern Type-Safe ORM for Bun and Node.js",
   description:
-    "A lightweight, feature-rich ORM designed for performance and developer experience. Unified API for PostgreSQL, MySQL, and SQLite.",
+    "A lightweight, feature-rich ORM designed for performance and developer experience. One API for PostgreSQL, MySQL/MariaDB, SQLite, SQL Server and MongoDB.",
 };
 
 export const viewport: Viewport = {

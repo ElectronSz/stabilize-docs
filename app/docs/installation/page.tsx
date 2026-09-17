@@ -6,14 +6,14 @@ export default function InstallationPage() {
   return (
     <div className="container mx-auto max-w-4xl py-12 md:py-16">
       <h1 className="text-4xl font-bold mb-4">Installation</h1>
-        <p className="text-lg text-muted-foreground mb-8">Get started with Stabilize ORM in your Bun project</p>
+        <p className="text-lg text-muted-foreground mb-8">Get started with Stabilize ORM in your Bun or Node.js project</p>
 
         <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6 mb-8">
           <h2 className="text-2xl font-semibold mb-4">Prerequisites</h2>
           <ul className="space-y-2">
             <li className="flex items-start gap-2">
               <CheckCircle2 className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
-              <span>Bun 1.0 or higher installed</span>
+              <span>Bun 1.0 or higher, <em>or</em> Node.js 22.13 or higher — one of the two</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle2 className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
@@ -26,15 +26,25 @@ export default function InstallationPage() {
           </ul>
         </Card>
 
-        <h2 className="text-2xl font-semibold mb-4">Install via Bun</h2>
-        <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4 mb-6">
+        <h2 className="text-2xl font-semibold mb-4">Install</h2>
+        <p className="mb-4">
+          There is one published package, not one per runtime. Install it with whichever package
+          manager your project already uses:
+        </p>
+        <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4 mb-4">
           <code className="text-sm font-mono">bun add stabilize-orm</code>
+        </div>
+        <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4 mb-6">
+          <code className="text-sm font-mono">npm install stabilize-orm</code>
         </div>
 
         <h2 className="text-2xl font-semibold mb-4">Install the CLI</h2>
         <p className="mb-4">The Stabilize CLI provides powerful code generation and migration tools:</p>
-        <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4 mb-6">
+        <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4 mb-4">
           <code className="text-sm font-mono">bun add -d stabilize-cli</code>
+        </div>
+        <div className="rounded-lg border border-accent/30 bg-secondary/50 p-4 mb-6">
+          <code className="text-sm font-mono">npm install -D stabilize-cli</code>
         </div>
 
         <Card className="border-accent/20 bg-card/50 backdrop-blur-sm p-6 mb-8">
@@ -63,7 +73,9 @@ export default function InstallationPage() {
             not native Bun modules
           </li>
           <li>
-            <code>bun:sqlite</code> for SQLite — the one driver that is built into the runtime
+            <code>bun:sqlite</code> on Bun or <code>node:sqlite</code> on Node.js for SQLite — the
+            one driver that is built into the runtime. Which one is used is decided at run time,
+            so the same code works on either.
           </li>
           <li>
             <code>mssql</code> for SQL Server

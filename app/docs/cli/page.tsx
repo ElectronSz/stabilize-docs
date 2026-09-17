@@ -130,27 +130,65 @@ export default function CLIPage() {
         <div className="mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 mb-4">
             <Terminal className="h-3.5 w-3.5 text-accent" />
-            <span className="text-sm font-medium text-accent">v3.1.0</span>
+            <span className="text-sm font-medium text-accent">v3.2.0</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
             CLI Reference
           </h1>
           <p className="text-lg text-muted-foreground">
-            31 commands. Install globally or use{" "}
+            31 commands. Runs on Node.js and Bun — install globally, or use{" "}
+            <code className="text-accent">npx</code> /{" "}
             <code className="text-accent">bunx</code>.
           </p>
         </div>
 
         <TerminalBlock title="install">
+          <Prompt cmd="npm install -g stabilize-cli" />
+          <Out color="text-[#28c840]">✔ installed stabilize-cli@3.2.0</Out>
+          <div className="h-4" />
           <Prompt cmd="bun add -g stabilize-cli" />
-          <Out color="text-[#28c840]">✔ installed stabilize-cli@3.1.0</Out>
+          <Out color="text-[#28c840]">✔ installed stabilize-cli@3.2.0</Out>
         </TerminalBlock>
 
-        <p className="text-sm text-muted-foreground mb-8">
+        <p className="text-sm text-muted-foreground mb-4">
           The CLI is versioned independently of the ORM. This release bundles{" "}
-          <code>stabilize-orm@3.x</code> and requires it — a project still on 2.x
-          is told to upgrade rather than failing from inside the bundle.
+          <code>stabilize-orm@3.2.x</code> and requires it — a project still on
+          2.x is told to upgrade rather than failing from inside the bundle.
         </p>
+
+        <p className="text-sm text-muted-foreground mb-8">
+          It ships as one JavaScript bundle with no native dependencies, so the
+          same install runs on <strong>Node.js 22.18+</strong> and{" "}
+          <strong>Bun 1.3+</strong>. The SQLite driver is chosen at run time —
+          whichever of <code>node:sqlite</code> or <code>bun:sqlite</code> the
+          runtime provides — and the other four backends are identical on both.
+        </p>
+
+        <div className="rounded-xl border border-accent/30 bg-accent/5 p-5 mb-10">
+          <h3 className="font-semibold mb-2">Running under Node.js</h3>
+          <p className="text-sm text-muted-foreground mb-3">
+            The CLI imports your <code>config/database.ts</code>,{" "}
+            <code>models/*.ts</code> and the rest of your project at run time,
+            and Node decides how to treat a <code>.ts</code> file by looking at
+            the nearest <code>package.json</code>. Without{" "}
+            <code>&quot;type&quot;: &quot;module&quot;</code> it treats yours as
+            CommonJS, so the <code>import</code> statements in your own files fail
+            before any command runs:
+          </p>
+          <TerminalBlock title="terminal">
+            <Prompt cmd="stabilize-cli db:tables" />
+            <Out color="text-[#ff5f57]">
+              SyntaxError: Cannot use import statement outside a module
+            </Out>
+          </TerminalBlock>
+          <p className="text-sm text-muted-foreground mt-3">
+            Add <code>&quot;type&quot;: &quot;module&quot;</code> to your
+            project&apos;s <code>package.json</code> and every command works
+            unchanged. Bun detects module syntax on its own, so Bun projects need
+            nothing. Node 22.18 is the floor because that is where Node loads
+            TypeScript by default.
+          </p>
+        </div>
 
         <div className="rounded-xl border border-border/40 bg-card/40 p-5 mb-10">
           <h3 className="font-semibold mb-2">MongoDB</h3>
@@ -420,6 +458,11 @@ export default function CLIPage() {
             desc={'Execute a raw query and display the results. On MongoDB the argument is a document command, such as {"find": "users"}.'}
             flags={["-c, --config <path>", "-p, --params"]}
             example="stabilize-cli query 'SELECT * FROM users LIMIT 5'"
+          />
+          <Cmd
+            name="-V, --version"
+            desc="Print the CLI version and exit. Reads it from the manifest, so it cannot drift from the published package."
+            example="stabilize-cli --version"
           />
           <Cmd
             name="info"

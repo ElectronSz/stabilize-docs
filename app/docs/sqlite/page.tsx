@@ -5,11 +5,14 @@ export default function SQLitePage() {
     <div className="container mx-auto max-w-4xl py-12 md:py-16">
       <h1 className="text-4xl font-bold mb-4">SQLite</h1>
       <p className="text-lg text-muted-foreground mb-8">
-        <code>DBType.SQLite</code> is served by <code>bun:sqlite</code>, the
-        driver built into Bun. There is no server, no connection string and no
-        pool — just a file — so this is the dialect where the storage layer
-        itself does the least and the ORM has to do the rest. Models,
-        repositories and query builders are unchanged.
+        <code>DBType.SQLite</code> is served by whichever SQLite driver is built
+        into the runtime you are on — <code>bun:sqlite</code> on Bun,{" "}
+        <code>node:sqlite</code> on Node.js. Neither is an npm package, the ORM
+        picks between them at run time, and the dialect behaves the same either
+        way. There is no server, no connection string and no pool — just a file
+        — so this is the dialect where the storage layer itself does the least
+        and the ORM has to do the rest. Models, repositories and query builders
+        are unchanged.
       </p>
 
       <div className="space-y-8">
@@ -43,10 +46,12 @@ export default dbConfig;`}
             code={`stabilize-cli config:init --type sqlite`}
           />
           <p className="text-muted-foreground mt-4">
-            Bun is a peer dependency of the ORM (
-            <code>{`bun >= 1.0.0`}</code>), because <code>bun:sqlite</code> is
-            not an npm package — it is part of the runtime. On Node this dialect
-            will not load; the other three will.
+            There is nothing to install for this dialect, because neither driver
+            is an npm package — each is part of its runtime.{" "}
+            <code>node:sqlite</code> arrived in Node 22.5 behind a flag and is
+            available without one from <strong>Node 22.13</strong>, which is
+            therefore the version this dialect needs on Node. Bun has shipped{" "}
+            <code>bun:sqlite</code> built in throughout.
           </p>
           <CodeBlock
             filename="tests/setup.ts"
@@ -256,6 +261,17 @@ LIMIT 25 OFFSET 25`}
             type decides type affinity rather than constraining the value — so
             the limit is enforced by the ORM on write instead.
           </p>
+          <p className="text-muted-foreground mt-4">
+            A SQLite integer is 64-bit, which is wider than a JavaScript{" "}
+            <code>number</code> represents exactly, and past that point the two
+            drivers diverge. On Node.js a value beyond{" "}
+            <code>Number.MAX_SAFE_INTEGER</code> is returned as a{" "}
+            <code>bigint</code>, so it stays exact; <code>bun:sqlite</code> has
+            no equivalent escape hatch and returns the rounded number. Within the
+            safe range both return plain <code>number</code>s, so ordinary{" "}
+            <code>id</code> columns are the same on either runtime — the
+            difference only appears if you actually store integers that large.
+          </p>
         </section>
 
         <section>
@@ -327,14 +343,15 @@ CREATE TABLE IF NOT EXISTS "accounts" ("id" TEXT NOT NULL PRIMARY KEY, "email" T
 });`}
           />
           <p className="text-muted-foreground mt-4">
-            One implementation note, since it changes what you can rely on:{" "}
-            <code>bun:sqlite</code>&apos;s own <code>db.transaction()</code> is
-            not used. It commits as soon as the callback returns, and an async
-            callback returns a pending promise at its first{" "}
-            <code>await</code> — the commit would land before the work finished,
-            and a later throw would roll nothing back. The statements are issued
-            explicitly instead, so a failed callback really does undo every
-            write inside it.
+            One implementation note, since it changes what you can rely on: the
+            driver&apos;s own transaction helper is not used.{" "}
+            <code>bun:sqlite</code>&apos;s <code>db.transaction()</code> commits
+            as soon as the callback returns, and an async callback returns a
+            pending promise at its first <code>await</code> — the commit would
+            land before the work finished, and a later throw would roll nothing
+            back. <code>node:sqlite</code> offers no such helper at all. The
+            statements are issued explicitly on either driver, so a failed
+            callback really does undo every write inside it.
           </p>
         </section>
 

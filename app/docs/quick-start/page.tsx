@@ -82,9 +82,10 @@ export default dbConfig;`}
               />
               <ul className="space-y-2 mt-4 text-sm text-muted-foreground">
                 <li>
-                  <strong>SQLite</strong> needs no server —{" "}
-                  <code>bun:sqlite</code> is built into the runtime and the file
-                  is created if it does not exist.
+                  <strong>SQLite</strong> needs no server — the driver is built
+                  into the runtime (<code>bun:sqlite</code> or{" "}
+                  <code>node:sqlite</code>) and the file is created if it does
+                  not exist.
                 </li>
                 <li>
                   <strong>PostgreSQL</strong> takes a <code>postgres://</code>{" "}
